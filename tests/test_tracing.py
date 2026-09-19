@@ -1,4 +1,5 @@
 from collections.abc import Iterator
+from pathlib import Path
 
 import pytest
 
@@ -7,7 +8,8 @@ from video_to_runbook.tracing import trace_url
 
 
 @pytest.fixture(autouse=True)
-def _fresh_settings(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+def _fresh_settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Iterator[None]:
+    monkeypatch.chdir(tmp_path)  # keep the repo's .env out of the test
     monkeypatch.delenv("LOGFIRE_PROJECT_URL", raising=False)
     get_settings.cache_clear()
     yield

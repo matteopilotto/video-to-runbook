@@ -45,12 +45,18 @@ if not modal.is_local():
     setup_logfire()
 
 
-@app.function(timeout=900)
+# Gemini refuses requests from some regions ("User location is not supported"), so the
+# functions that call it stay in the US.
+GEMINI_REGION = "us"
+
+
+@app.function(timeout=900, region=GEMINI_REGION)
 async def observe(run_id: str) -> None:
     await volume.reload.aio()
     run_dir = runs.run_dir(get_settings().data_dir, run_id)
     meta = runs.read_meta(run_dir)
     meta.state = "watching"
+    meta.trace_url = trace_url(run_id)
     runs.write_meta(run_dir, meta)
     await volume.commit.aio()
     with logfire.span("runbook", run_id=run_id, video=meta.filename):
@@ -71,7 +77,6 @@ async def observe(run_id: str) -> None:
             meta.observer_requests = result.requests
             meta.observer_input_tokens = result.input_tokens
             meta.observer_output_tokens = result.output_tokens
-            meta.trace_url = trace_url(run_id)
             meta.state = "done"  # validation fan-out arrives with validate_step
         meta.finished_at = datetime.now(UTC)
         runs.write_meta(run_dir, meta)
