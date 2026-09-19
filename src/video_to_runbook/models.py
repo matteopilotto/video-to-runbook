@@ -5,6 +5,12 @@ from pydantic import BaseModel, BeforeValidator, Field, StringConstraints, model
 
 Action = Literal["click", "type", "select", "navigate", "wait", "verify"]
 State = Literal["uploaded", "watching", "checking", "done", "failed"]
+
+# The SOP stages are a second pipeline over the same run: a runbook is compiled into
+# a plan, and the plan is executed. Keeping them off `State` keeps "what the video
+# pipeline is doing" and "what the SOP pipeline is doing" separately readable.
+PlanState = Literal["none", "compiling", "planned", "failed"]
+ExecState = Literal["none", "requested", "running", "done", "failed"]
 Badge = Literal["checking", "verified", "flagged", "error"]
 
 GENERIC_TARGETS = {
@@ -137,6 +143,20 @@ class RunMeta(BaseModel):
     finished_at: datetime | None = None
     trace_url: str | None = None
 
+    plan_state: PlanState = "none"
+    plan_error: str | None = None
+    plan_validated: bool = False
+    plan_rounds: int = 0
+    plan_issues: int = 0
+
+    # `requested` is a hand-off, not a running job: execution happens on an operator's
+    # machine, which is the only place SAP credentials live. See sop_worker.py.
+    exec_state: ExecState = "none"
+    exec_live: bool = False
+    exec_error: str | None = None
+    exec_steps: int = 0
+    exec_failed: int = 0
+
 
 class RunStatus(BaseModel):
     run_id: str
@@ -154,6 +174,17 @@ class RunStatus(BaseModel):
     video_url: str
     runbook: Runbook | None
     checks: list[CheckRecord]
+
+    plan_state: PlanState = "none"
+    plan_error: str | None = None
+    plan_validated: bool = False
+    plan_rounds: int = 0
+    plan_issues: int = 0
+    exec_state: ExecState = "none"
+    exec_live: bool = False
+    exec_error: str | None = None
+    exec_steps: int = 0
+    exec_failed: int = 0
 
     def record_for(self, order: int) -> CheckRecord | None:
         for record in self.checks:

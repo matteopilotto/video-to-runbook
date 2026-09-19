@@ -10,3 +10,7 @@ samples/*.mp4
 .pytest_cache/
 .ruff_cache/
 *.egg-info/
+
+# The SAP schema. No customer data, but it describes the ERP configuration in
+# full. Built locally: see the SOP executor section of the README.
+catalog.json

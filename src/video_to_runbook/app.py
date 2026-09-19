@@ -19,6 +19,8 @@ from video_to_runbook.frames import extract_frames, probe_duration
 from video_to_runbook.models import CheckRecord, RunMeta, RunStatus
 from video_to_runbook.observer import ObserverDeps
 from video_to_runbook.render import render_fragment, render_markdown
+from video_to_runbook.sop.catalog import Catalog
+from video_to_runbook.sop.compiler import build_agent, compile_sop
 from video_to_runbook.tracing import setup_logfire, trace_url
 from video_to_runbook.validator import check_step
 
@@ -32,6 +34,7 @@ image = (
         "pydantic-ai>=2.46.0",
         "pydantic-settings>=2.15.0",
     )
+    .add_local_file("catalog.json", "/root/catalog.json")
     .add_local_dir("src/video_to_runbook", "/root/video_to_runbook")
 )
 volume = modal.Volume.from_name("video-to-runbook-data", create_if_missing=True)
@@ -129,6 +132,39 @@ async def validate_step(run_id: str, order: int) -> None:
     await volume.commit.aio()
 
 
+@app.function(timeout=900, region=GEMINI_REGION)
+async def compile_plan(run_id: str) -> None:
+    """The Architect: the runbook becomes a typed, schema-checked SAP plan.
+
+    No SAP credentials here. This reads the catalogue off local disk and talks only
+    to Gemini; reaching the ERP is the local worker's job.
+    """
+    settings = get_settings()
+    await volume.reload.aio()
+    run_dir = runs.run_dir(settings.data_dir, run_id)
+    meta = runs.read_meta(run_dir)
+    meta.plan_state, meta.plan_error = "compiling", None
+    runs.write_meta(run_dir, meta)
+    await volume.commit.aio()
+
+    with logfire.span("plan", run_id=run_id):
+        try:
+            sop_text = render_markdown(runs.read_status(run_dir))
+            catalog = Catalog(settings.catalog_path)
+            agent = build_agent(catalog, settings.planner_model)
+            result = await compile_sop(agent, catalog, sop_text)
+            runs.write_plan(run_dir, result.model_dump_json(indent=1))
+            meta.plan_validated = result.validated
+            meta.plan_rounds = result.rounds
+            meta.plan_issues = len(result.issues)
+            meta.plan_state = "planned"
+        except Exception as exc:  # noqa: BLE001  the run must end failed, never stay compiling
+            meta.plan_state = "failed"
+            meta.plan_error = f"{type(exc).__name__}: {exc}"
+        runs.write_meta(run_dir, meta)
+        await volume.commit.aio()
+
+
 @app.function()
 @modal.asgi_app()
 def web() -> FastAPI:
@@ -190,6 +226,54 @@ def web() -> FastAPI:
     @api.get("/runs/{run_id}/runbook.html", response_class=HTMLResponse)
     def fragment(run_id: str) -> str:
         return render_fragment(runs.read_status(run_dir_or_404(run_id)))
+
+    @api.post("/runs/{run_id}/plan", status_code=202)
+    async def plan(run_id: str) -> dict[str, str]:
+        run_dir = run_dir_or_404(run_id)
+        meta = runs.read_meta(run_dir)
+        if meta.state != "done":
+            raise HTTPException(status_code=409, detail="the runbook is not finished yet")
+        if meta.plan_state == "compiling":
+            raise HTTPException(status_code=409, detail="already compiling")
+        await compile_plan.spawn.aio(run_id)
+        return {"run_id": run_id}
+
+    @api.get("/runs/{run_id}/plan.json")
+    def plan_json(run_id: str) -> PlainTextResponse:
+        payload = runs.read_plan(run_dir_or_404(run_id))
+        if payload is None:
+            raise HTTPException(status_code=409, detail="no plan yet")
+        return PlainTextResponse(payload, media_type="application/json")
+
+    @api.post("/runs/{run_id}/execute", status_code=202)
+    async def execute(run_id: str, live: bool = False) -> dict[str, str]:
+        """Hand the plan to whoever is running sop_worker.py.
+
+        Execution deliberately does not happen here. SAP credentials live on an
+        operator's machine and never reach this container, so all this endpoint can
+        do is record that a run was asked for.
+        """
+        run_dir = run_dir_or_404(run_id)
+        meta = runs.read_meta(run_dir)
+        if meta.plan_state != "planned":
+            raise HTTPException(status_code=409, detail="compile a plan first")
+        if live and not meta.plan_validated:
+            raise HTTPException(
+                status_code=409, detail="a plan with validation errors cannot be run live"
+            )
+        if meta.exec_state in ("requested", "running"):
+            raise HTTPException(status_code=409, detail=f"already {meta.exec_state}")
+        meta.exec_state, meta.exec_live, meta.exec_error = "requested", live, None
+        runs.write_meta(run_dir, meta)
+        await volume.commit.aio()
+        return {"run_id": run_id, "live": str(live).lower()}
+
+    @api.get("/runs/{run_id}/trace.json")
+    def trace_json(run_id: str) -> PlainTextResponse:
+        path = run_dir_or_404(run_id) / "trace.json"
+        if not path.exists():
+            raise HTTPException(status_code=409, detail="no execution trace yet")
+        return PlainTextResponse(path.read_text(), media_type="application/json")
 
     @api.get("/runs/{run_id}/runbook.md")
     def export(run_id: str) -> PlainTextResponse:

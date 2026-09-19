@@ -42,6 +42,11 @@
   .banner { padding: 10px 12px; border-radius: 8px; background: #fdecec; color: var(--red); margin-bottom: 12px; }
   #export { display: none; margin-left: auto; color: var(--green); font-weight: 600; text-decoration: none; }
   #export[href] { display: inline; }
+  #sop { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 20px; border-top: 1px solid var(--line); background: #fff; font-size: 13px; }
+  #sop button { padding: 6px 14px; font: inherit; cursor: pointer; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
+  #sop button:disabled { cursor: not-allowed; opacity: .45; }
+  #live-label { display: flex; align-items: center; gap: 4px; color: var(--grey); }
+  #sop-state { color: var(--grey); }
   footer { padding: 10px 20px; border-top: 1px solid var(--line); background: #fff; color: var(--grey); font-size: 13px; display: flex; gap: 20px; min-height: 40px; }
 </style>
 </head>
@@ -61,6 +66,14 @@
     <p class="state">Drop a screen recording to begin</p>
   </section>
 </main>
+<section id="sop">
+  <button id="plan-btn" disabled>Generate instructions</button>
+  <button id="exec-btn" disabled>Run executor</button>
+  <label id="live-label"><input type="checkbox" id="live"> live (writes to SAP)</label>
+  <span id="sop-state"></span>
+  <a id="plan-link" href="#" target="_blank" rel="noopener" hidden>plan.json</a>
+  <a id="trace-link" href="#" target="_blank" rel="noopener" hidden>trace.json</a>
+</section>
 <footer>
   <span id="elapsed"></span>
   <span id="calls"></span>
@@ -72,6 +85,12 @@
 <script>
   const MAX_BYTES = 100 * 1024 * 1024;
   const dropzone = document.getElementById("dropzone");
+  const planBtn = document.getElementById("plan-btn");
+  const execBtn = document.getElementById("exec-btn");
+  const liveBox = document.getElementById("live");
+  const sopState = document.getElementById("sop-state");
+  const planLink = document.getElementById("plan-link");
+  const traceLink = document.getElementById("trace-link");
   const fileInput = document.getElementById("file");
   const reason = document.getElementById("reason");
   const video = document.getElementById("video");
@@ -126,6 +145,71 @@
     poll();
   }
 
+  const PLAN_LABEL = {
+    none: "", compiling: "Compiling the SOP into a plan…",
+    planned: "Plan ready", failed: "Compile failed",
+  };
+  const EXEC_LABEL = {
+    none: "", requested: "Queued — start sop_worker.py on the machine that reaches SAP",
+    running: "Executing on the operator machine…", done: "Executed", failed: "Execution failed",
+  };
+
+  function renderSop(status) {
+    planBtn.disabled = status.state !== "done" || status.plan_state === "compiling";
+    execBtn.disabled = status.plan_state !== "planned" ||
+                       ["requested", "running"].includes(status.exec_state);
+    // A plan the validator rejected is readable but must never touch a live ERP.
+    liveBox.disabled = !status.plan_validated;
+    liveBox.title = status.plan_validated ? "" : "the plan has validation errors";
+
+    let text = "";
+    if (status.exec_state !== "none") {
+      text = EXEC_LABEL[status.exec_state];
+      if (status.exec_state === "done" || status.exec_state === "failed") {
+        text += ` — ${status.exec_steps} step(s), ${status.exec_failed} failed` +
+                (status.exec_live ? ", LIVE" : ", dry run");
+      }
+      if (status.exec_error) text += ` — ${status.exec_error}`;
+    } else if (status.plan_state !== "none") {
+      text = PLAN_LABEL[status.plan_state];
+      if (status.plan_state === "planned") {
+        text += ` — ${status.plan_rounds} round(s), ` +
+                (status.plan_validated ? "validated" : `${status.plan_issues} issue(s)`);
+      }
+      if (status.plan_error) text += ` — ${status.plan_error}`;
+    }
+    sopState.textContent = text;
+    planLink.hidden = status.plan_state !== "planned";
+    planLink.href = "/runs/" + runId + "/plan.json";
+    traceLink.hidden = !["done", "failed"].includes(status.exec_state);
+    traceLink.href = "/runs/" + runId + "/trace.json";
+  }
+
+  function repoll() {
+    clearInterval(pollTimer);
+    pollTimer = setInterval(poll, 2000);
+    poll();
+  }
+
+  async function post(url) {
+    const response = await fetch(url, { method: "POST" });
+    if (!response.ok) { sopState.textContent = await response.text(); return false; }
+    repoll();
+    return true;
+  }
+
+  planBtn.addEventListener("click", () => {
+    planBtn.disabled = true;
+    post("/runs/" + runId + "/plan");
+  });
+
+  execBtn.addEventListener("click", () => {
+    if (liveBox.checked &&
+        !confirm("This creates real documents in SAP. Continue?")) return;
+    execBtn.disabled = true;
+    post("/runs/" + runId + "/execute?live=" + (liveBox.checked ? "true" : "false"));
+  });
+
   function showElapsed(seconds) { elapsedEl.textContent = "elapsed " + Math.floor(seconds) + " s"; }
 
   function tick() { showElapsed((Date.now() - startedAt) / 1000); }
@@ -166,7 +250,10 @@
       }
       setRight(html);
     }
-    if (status.state === "done" || status.state === "failed") finish(status);
+    renderSop(status);
+    const sopBusy = status.plan_state === "compiling" ||
+                    status.exec_state === "requested" || status.exec_state === "running";
+    if ((status.state === "done" || status.state === "failed") && !sopBusy) finish(status);
   }
 
   function escapeHtml(text) {
