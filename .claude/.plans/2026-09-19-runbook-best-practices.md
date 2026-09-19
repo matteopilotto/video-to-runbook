@@ -1,10 +1,10 @@
 # Plan: write runbooks the way the PagerDuty guide says to
 
-**Date**: 2026-09-19 | **Status**: proposed, nothing implemented
+**Date**: 2026-09-19 | **Status**: implemented, seven commits on `feat/runbook-best-practices`
 **Source**: PagerDuty, "What is a Runbook?", section *Creating a Runbook Template for Your
 Company* (`#heading-3`, sub-steps `#heading-4` to `#heading-6`),
 https://www.pagerduty.com/resources/automation/learn/what-is-a-runbook/#heading-3
-**Branch**: see "Open decisions" at the end; not started.
+**Branch**: `feat/runbook-best-practices` off `main`, per open decision 1 (b).
 
 ## Assumptions
 
