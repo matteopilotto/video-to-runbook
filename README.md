@@ -180,6 +180,13 @@ Automatic deletion is roadmap.
   are recorded as errors without a call. The budget assumes every check retries twice, so
   it is conservative: in practice checks use one request each. The cap started at 60 and
   moved to 100 after a 20-step runbook tripped it in rehearsal.
+- **Runbook shape follows the PagerDuty runbook guide.** Its writing rules (clear and simple,
+  easy to follow, specific to the process, consistent structure and headers, field-tested)
+  are the reason for the fixed section order in every rendering: title, system,
+  Prerequisites, Steps, Pitfalls, with an empty section shown as "None recorded." rather
+  than dropped. Of Limoncelli's seven runbook sections the guide cites, a task recording can
+  only source "Instructions for Common Tasks"; title and system stand in for the service
+  overview, and the other five are documents about a service, not a task.
 
 ## Eval scores
 

@@ -132,3 +132,14 @@ def test_markdown_export_lists_every_step_with_its_status(
 def test_markdown_export_needs_a_runbook() -> None:
     with pytest.raises(ValueError, match="no runbook yet"):
         render_markdown(status_for(None, state="watching"))
+
+
+def test_every_runbook_has_the_same_sections_in_order(sap_runbook: Runbook) -> None:
+    assert sap_runbook.prerequisites == [] and sap_runbook.pitfalls
+    html = render_fragment(status_for(sap_runbook))
+    md = render_markdown(status_for(sap_runbook))
+
+    assert html.index("Prerequisites") < html.index("Pitfalls")
+    assert html.count("None recorded.") == 1
+    assert md.index("## Prerequisites") < md.index("## Steps") < md.index("## Pitfalls")
+    assert md.count("None recorded.") == 1

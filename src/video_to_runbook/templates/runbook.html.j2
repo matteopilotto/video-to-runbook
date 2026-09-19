@@ -18,13 +18,15 @@
 {%- set runbook = status.runbook -%}
 <h2>{{ runbook.title }}</h2>
 <p class="system">{{ runbook.system }}</p>
-{%- if runbook.prerequisites %}
 <h3>Prerequisites</h3>
+{%- if runbook.prerequisites %}
 <ul>
 {%- for item in runbook.prerequisites %}
   <li>{{ item }}</li>
 {%- endfor %}
 </ul>
+{%- else %}
+<p>None recorded.</p>
 {%- endif %}
 <div class="steps">
   <div class="row head">
@@ -47,12 +49,14 @@
 {%- endif %}
 {%- endfor %}
 </div>
-{%- if runbook.pitfalls %}
 <h3>Pitfalls</h3>
+{%- if runbook.pitfalls %}
 <ul>
 {%- for item in runbook.pitfalls %}
   <li>{{ item }}</li>
 {%- endfor %}
 </ul>
+{%- else %}
+<p>None recorded.</p>
 {%- endif %}
 {%- endif %}
