@@ -4,45 +4,60 @@
 <meta charset="utf-8">
 <title>Video to Runbook</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root { --grey: #8a8f98; --green: #1f8f4e; --red: #c92a2a; --amber: #d9820b; --line: #e3e5e8; }
+  /* Tokens from DESIGN.md (Vercel Geist). --success is the one addition: verified stays green. */
+  :root {
+    --ink: #171717; --body: #4d4d4d; --mute: #8f8f8f; --faint: #a1a1a1;
+    --hairline: #ebebeb; --hairline-soft: #f2f2f2; --canvas: #fafafa; --elevated: #ffffff;
+    --link: #0070f3; --link-deep: #0761d1; --link-soft: #d3e5ff;
+    --error: #ee0000; --error-deep: #c50000;
+    --warning: #f5a623; --warning-soft: #ffefcf; --warning-deep: #ab570a;
+    --success: #1f8f4e; --success-soft: #e6f4ea;
+    --r-sm: 6px; --r-md: 12px;
+    --sans: Geist, Inter, -apple-system, system-ui, Arial, sans-serif;
+    --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
   * { box-sizing: border-box; }
-  body { margin: 0; font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; color: #1c1e21; background: #fafafa; }
-  header { padding: 12px 20px; border-bottom: 1px solid var(--line); background: #fff; }
-  header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+  body { margin: 0; font: 400 14px/20px var(--sans); color: var(--body); background: var(--canvas); }
+  header { padding: 12px 20px; border-bottom: 1px solid var(--hairline); background: #fff; }
+  header h1 { margin: 0; font-size: 18px; font-weight: 600; color: var(--ink); }
   main { display: grid; grid-template-columns: minmax(320px, 2fr) 3fr; gap: 20px; padding: 20px; min-height: calc(100vh - 110px); }
   #left, #right { min-width: 0; }
   #dropzone { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; height: 320px; border: 2px dashed #b7bcc4; border-radius: 10px; background: #fff; cursor: pointer; text-align: center; padding: 20px; }
-  #dropzone.over { border-color: var(--green); background: #f2fbf5; }
-  #dropzone .hint { color: var(--grey); font-size: 13px; }
-  #dropzone .reason { color: var(--red); }
+  #dropzone.over { border-color: var(--link); background: var(--link-soft); }
+  #dropzone strong { color: var(--ink); font-weight: 500; }
+  #dropzone .hint { color: var(--mute); font-size: 12px; }
+  #dropzone .reason { color: var(--error); }
   #dropzone input { display: none; }
   video { width: 100%; border-radius: 10px; background: #000; display: none; }
-  #right .state { color: var(--grey); }
-  .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--line); border-top-color: var(--grey); border-radius: 50%; animation: spin 0.9s linear infinite; vertical-align: -2px; margin-right: 6px; }
+  #right .state { color: var(--mute); }
+  .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--hairline); border-top-color: var(--mute); border-radius: 50%; animation: spin 0.9s linear infinite; vertical-align: -2px; margin-right: 6px; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  h2 { margin: 0 0 4px; font-size: 20px; }
-  .system { margin: 0 0 12px; color: var(--grey); }
-  h3 { margin: 16px 0 6px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--grey); }
-  .steps { background: #fff; font-size: 14px; border-top: 1px solid var(--line); }
-  .steps .row { display: grid; grid-template-columns: 2em 4.5em 5.5em 1.4fr 1fr 1fr 1.6fr 6em; gap: 0 8px; padding: 6px 8px; border-bottom: 1px solid var(--line); align-items: start; list-style: none; }
+  h2 { margin: 0 0 4px; font-size: 20px; color: var(--ink); }
+  .system { margin: 0 0 12px; color: var(--mute); }
+  h3 { margin: 16px 0 6px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--mute); }
+  .steps { background: var(--elevated); font-size: 14px; border-top: 1px solid var(--hairline); }
+  .steps .row { display: grid; grid-template-columns: 2em 4.5em 5.5em 1.4fr 1fr 1fr 1.6fr 6em; gap: 0 8px; padding: 6px 8px; border-bottom: 1px solid var(--hairline); align-items: start; list-style: none; }
   .steps .row::-webkit-details-marker { display: none; }
-  .steps .row.head { font-weight: 600; color: var(--grey); font-size: 12px; text-transform: uppercase; }
+  .steps .row.head { font-weight: 600; color: var(--mute); font-size: 12px; text-transform: uppercase; }
   .steps .row:not(.head) { cursor: pointer; }
-  .steps .row:not(.head):hover { background: #f4f6f8; }
+  .steps .row:not(.head):hover { background: var(--hairline-soft); }
   .steps .time { font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .steps .action { font-family: ui-monospace, monospace; font-size: 13px; }
-  .steps .note { margin: 0; padding: 4px 8px 10px 8px; color: var(--red); border-bottom: 1px solid var(--line); background: #fff7f7; }
-  .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; }
-  .badge.checking { background: var(--grey); }
-  .badge.verified { background: var(--green); }
-  .badge.flagged { background: var(--red); }
-  .badge.error { background: var(--amber); }
+  .steps .action { font-family: var(--mono); font-size: 13px; }
+  .steps .note { margin: 0; padding: 4px 8px 10px 8px; color: var(--error-deep); border-bottom: 1px solid var(--hairline); background: var(--canvas); }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+  .badge.checking { background: var(--hairline-soft); color: var(--mute); }
+  .badge.verified { background: var(--success-soft); color: var(--success); }
+  .badge.flagged { background: var(--error); color: #fff; }
+  .badge.error { background: var(--warning-soft); color: var(--warning-deep); }
   .badge.error::before { content: "\26A0\FE0E "; }
-  .banner { padding: 10px 12px; border-radius: 8px; background: #fdecec; color: var(--red); margin-bottom: 12px; }
-  #export { display: none; margin-left: auto; color: var(--green); font-weight: 600; text-decoration: none; }
+  .banner { padding: 10px 12px; border-radius: 8px; background: var(--elevated); border: 1px solid var(--error); color: var(--error); margin-bottom: 12px; }
+  #export { display: none; margin-left: auto; color: var(--ink); font-weight: 500; text-decoration: none; }
   #export[href] { display: inline; }
-  footer { padding: 10px 20px; border-top: 1px solid var(--line); background: #fff; color: var(--grey); font-size: 13px; display: flex; gap: 20px; min-height: 40px; }
+  footer { padding: 10px 20px; border-top: 1px solid var(--hairline); background: #fff; color: var(--mute); font-size: 13px; display: flex; gap: 20px; min-height: 40px; }
 </style>
 </head>
 <body>
