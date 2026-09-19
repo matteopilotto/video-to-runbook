@@ -1,0 +1,46 @@
+{%- if status.runbook is none -%}
+{%- if status.state == "failed" -%}
+<div class="banner">{{ status.error }}</div>
+{%- else -%}
+<p class="state"><span class="spinner"></span> Watching the recording…</p>
+{%- endif -%}
+{%- else -%}
+{%- set runbook = status.runbook -%}
+<h2>{{ runbook.title }}</h2>
+<p class="system">{{ runbook.system }}</p>
+{%- if runbook.prerequisites %}
+<h3>Prerequisites</h3>
+<ul>
+{%- for item in runbook.prerequisites %}
+  <li>{{ item }}</li>
+{%- endfor %}
+</ul>
+{%- endif %}
+<table class="steps">
+  <thead>
+    <tr><th>#</th><th>time</th><th>action</th><th>target</th><th>value</th><th>screen</th><th>intent</th><th>check</th></tr>
+  </thead>
+  <tbody>
+{%- for step in runbook.steps %}
+    <tr data-order="{{ step.order }}" data-timestamp="{{ step.timestamp_s }}">
+      <td>{{ step.order }}</td>
+      <td class="time">{{ step.timestamp_s | mmss }}</td>
+      <td class="action">{{ step.action }}</td>
+      <td>{{ step.target }}</td>
+      <td>{{ step.value or "" }}</td>
+      <td>{{ step.screen }}</td>
+      <td>{{ step.intent }}</td>
+      <td><span class="badge {{ status.badge_for(step.order) }}">{{ status.badge_for(step.order) }}</span></td>
+    </tr>
+{%- endfor %}
+  </tbody>
+</table>
+{%- if runbook.pitfalls %}
+<h3>Pitfalls</h3>
+<ul>
+{%- for item in runbook.pitfalls %}
+  <li>{{ item }}</li>
+{%- endfor %}
+</ul>
+{%- endif %}
+{%- endif %}
