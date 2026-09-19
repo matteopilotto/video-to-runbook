@@ -1,12 +1,13 @@
 import json
 import re
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 from markupsafe import escape
 
-from video_to_runbook.models import CheckRecord, Runbook, RunStatus
-from video_to_runbook.render import mmss, render_fragment, render_markdown
+from video_to_runbook.models import CheckRecord, Runbook, RunStatus, Step, StepCheck
+from video_to_runbook.render import instruction, mmss, render_fragment, render_markdown
 
 
 def status_for(
@@ -24,6 +25,7 @@ def status_for(
         tamper_step=None,
         tamper_applied=False,
         trace_url=None,
+        created_at=datetime(2026, 9, 19, 14, 30, tzinfo=UTC),
         elapsed_s=12.0,
         calls=1,
         input_tokens=10,
@@ -112,23 +114,84 @@ def test_markdown_export_lists_every_step_with_its_status(
     assert sap_runbook.system in md
     for item in sap_runbook.prerequisites + sap_runbook.pitfalls:
         assert f"- {item}" in md
-    step_lines = [line for line in md.splitlines() if re.match(r"\| \d+ \|", line)]
+    step_lines = [line for line in md.splitlines() if re.match(r"\d+\. ", line)]
     assert len(step_lines) == len(sap_runbook.steps)
     for step, line in zip(sap_runbook.steps, step_lines, strict=True):
-        for text in (mmss(step.timestamp_s), step.action, step.target, step.screen, step.intent):
-            assert text in line
-        if step.value:
-            assert step.value in line
-    assert "checking" in step_lines[unchecked.order - 1]
-    assert "error" in step_lines[-1] and "timed out" in step_lines[-1]
+        assert line.startswith(f"{step.order}. **{mmss(step.timestamp_s)}** ")
+        assert f"{instruction(step)}, to {step.intent}." in line
+    assert step_lines[unchecked.order - 1].endswith("`checking`")
+    assert step_lines[-1].endswith("`error`: timed out")
     for record in checks:
         if record.badge == "flagged":
             assert record.check is not None and record.check.note is not None
-            assert record.check.note in step_lines[record.order - 1]
-            assert "flagged" in step_lines[record.order - 1]
-    assert "verified" in step_lines[1]
+            assert step_lines[record.order - 1].endswith(f"`flagged`: {record.check.note}")
+    assert step_lines[1].endswith("`verified`")
+    assert "|" not in md
+
+
+@pytest.mark.parametrize(
+    ("action", "value", "expected"),
+    [
+        ("click", None, "Click **Add** on the Sales Order screen"),
+        ("type", "06/30/2019", "Type `06/30/2019` into **Add** on the Sales Order screen"),
+        ("select", None, "Select **Add** on the Sales Order screen"),
+        ("navigate", None, "Go to **Add** on the Sales Order screen"),
+        ("wait", None, "Wait for **Add** on the Sales Order screen"),
+        ("verify", None, "Check **Add** on the Sales Order screen"),
+    ],
+)
+def test_instruction_is_one_imperative_sentence(
+    action: str, value: str | None, expected: str
+) -> None:
+    step = Step(
+        order=1,
+        timestamp_s=5.0,
+        action=action,  # type: ignore[arg-type]
+        target="Add",
+        value=value,
+        screen="Sales Order",
+        intent="save the order",
+    )
+    assert instruction(step) == expected
+
+
+def test_markdown_export_opens_with_provenance_and_check_counts(sap_runbook: Runbook) -> None:
+    checks = [
+        CheckRecord(order=1, check=StepCheck(order=1, matches=True, confidence=0.9)),
+        CheckRecord(order=2, check=StepCheck(order=2, matches=False, confidence=0.8, note="n")),
+        CheckRecord(order=3, error="timed out"),
+    ]
+    md = render_markdown(status_for(sap_runbook, checks=checks))
+
+    header = (
+        "Recorded from clip.mp4 (01:58), generated 2026-09-19 by Video-to-Runbook.\n\n"
+        f"Checks: 1 verified, 1 flagged, 1 not checked, {len(sap_runbook.steps) - 3} pending."
+    )
+    assert header in md
+    assert md.index(sap_runbook.system) < md.index(header) < md.index("## Prerequisites")
 
 
 def test_markdown_export_needs_a_runbook() -> None:
     with pytest.raises(ValueError, match="no runbook yet"):
         render_markdown(status_for(None, state="watching"))
+
+
+def test_every_runbook_has_the_same_sections_in_order(sap_runbook: Runbook) -> None:
+    bare = sap_runbook.model_copy(update={"prerequisites": [], "pitfalls": []})
+    html = render_fragment(status_for(bare))
+    md = render_markdown(status_for(bare))
+
+    assert html.index("Prerequisites") < html.index("Pitfalls")
+    assert html.count("None recorded.") == 2
+    assert md.index("## Prerequisites") < md.index("## Steps") < md.index("## Pitfalls")
+    assert md.count("None recorded.") == 2
+
+
+def test_outcome_section_sits_between_steps_and_pitfalls(sap_runbook: Runbook) -> None:
+    html = render_fragment(status_for(sap_runbook))
+    md = render_markdown(status_for(sap_runbook))
+
+    assert html.index("Prerequisites") < html.index("Outcome") < html.index("Pitfalls")
+    assert sap_runbook.outcome in html
+    assert md.index("## Steps") < md.index("## Outcome") < md.index("## Pitfalls")
+    assert f"## Outcome\n\n{sap_runbook.outcome}\n" in md

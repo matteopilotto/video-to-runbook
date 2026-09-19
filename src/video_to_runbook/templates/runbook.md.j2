@@ -1,26 +1,40 @@
+{%- set verified = status.checks | selectattr("badge", "equalto", "verified") | list | length %}
+{%- set flagged = status.checks | selectattr("badge", "equalto", "flagged") | list | length %}
+{%- set errors = status.checks | selectattr("badge", "equalto", "error") | list | length %}
+{%- set pending = runbook.steps | length - status.checks | length -%}
 # {{ runbook.title }}
 
 System: {{ runbook.system }}
-{%- if runbook.prerequisites %}
+
+Recorded from {{ status.filename }} ({{ status.duration_s | mmss }}), generated {{ status.created_at.date() }} by Video-to-Runbook.
+
+Checks: {{ verified }} verified, {{ flagged }} flagged, {{ errors }} not checked, {{ pending }} pending.
 
 ## Prerequisites
-{% for item in runbook.prerequisites %}
+{% if runbook.prerequisites %}
+{%- for item in runbook.prerequisites %}
 - {{ item }}
 {%- endfor %}
+{%- else %}
+None recorded.
 {%- endif %}
 
 ## Steps
-
-| # | time | action | target | value | screen | intent | status | note |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-{%- for step in runbook.steps %}
+{% for step in runbook.steps %}
 {%- set record = status.record_for(step.order) %}
-| {{ step.order }} | {{ step.timestamp_s | mmss }} | {{ step.action }} | {{ step.target | cell }} | {{ (step.value or "") | cell }} | {{ step.screen | cell }} | {{ step.intent | cell }} | {{ status.badge_for(step.order) }} | {{ (record.error if record and record.error else (record.check.note if record and record.check else "")) or "" | cell }} |
+{%- set note = record.error if record and record.error else (record.check.note if record and record.check else "") %}
+{{ step.order }}. **{{ step.timestamp_s | mmss }}** {{ step | instruction | oneline }}, to {{ step.intent | oneline }}. `{{ status.badge_for(step.order) }}`{% if note %}: {{ note | oneline }}{% endif %}
 {%- endfor %}
-{%- if runbook.pitfalls %}
+
+## Outcome
+
+{{ runbook.outcome }}
 
 ## Pitfalls
-{% for item in runbook.pitfalls %}
+{% if runbook.pitfalls %}
+{%- for item in runbook.pitfalls %}
 - {{ item }}
 {%- endfor %}
+{%- else %}
+None recorded.
 {%- endif %}

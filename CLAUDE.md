@@ -10,7 +10,10 @@ Python, managed with `uv`. Features go through spec-kit (`/speckit-*` skills in
 
 Status: the Observer pipeline (spec 001) is built end to end: upload, Observer, parallel
 Validators, page with badges and seek, Markdown export, eval, Logfire tracing. Unit tests
-and CI run; the last eval scores are in the README.
+and CI run; the last eval scores are in the README. The runbook's shape (imperative title,
+prerequisites, one step per operator action, outcome, pitfalls named by step, a numbered
+instruction list in the export) follows the PagerDuty runbook guide; the mapping from its
+rules to the schema, the Observer instructions, and the templates is in the plan below.
 
 ## Where to look
 
@@ -21,6 +24,7 @@ and CI run; the last eval scores are in the README.
 | Sample recordings, their sources, ground-truth step tables, the rejected ones | `samples/README.md` |
 | Current feature's spec, plan, and tasks | `specs/<NNN>-<name>/{spec,plan,tasks}.md` |
 | Project constitution | `.specify/memory/constitution.md` |
+| Why the runbook has the sections and wording it has | `.claude/.plans/2026-09-19-runbook-best-practices.md` |
 | Spec-kit workflow (specify → clarify → plan → tasks → implement) | each skill's `SKILL.md` describes itself |
 
 ## Commands

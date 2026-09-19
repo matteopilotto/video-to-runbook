@@ -58,6 +58,7 @@ class Runbook(BaseModel):
     system: NonEmpty
     prerequisites: list[str] = []
     steps: list[Step] = Field(min_length=1)
+    outcome: NonEmpty
     pitfalls: list[str] = []
 
     @model_validator(mode="after")
@@ -84,6 +85,16 @@ class Runbook(BaseModel):
                 raise ValueError(
                     f"step {step.order} target '{step.target}' is too generic; "
                     "name the on-screen label"
+                )
+        return self
+
+    @model_validator(mode="after")
+    def typed_steps_carry_values(self) -> "Runbook":
+        for step in self.steps:
+            if step.action == "type" and not (step.value and step.value.strip()):
+                raise ValueError(
+                    f"step {step.order} types into '{step.target}' but has no value; "
+                    "record what was typed"
                 )
         return self
 
@@ -147,6 +158,7 @@ class RunStatus(BaseModel):
     tamper_step: int | None
     tamper_applied: bool
     trace_url: str | None
+    created_at: datetime
     elapsed_s: float
     calls: int
     input_tokens: int

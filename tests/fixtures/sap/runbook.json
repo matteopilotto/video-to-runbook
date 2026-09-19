@@ -1,34 +1,38 @@
 {
-  "title": "Creating a Sales Order",
+  "title": "Create a sales order",
   "system": "SAP Business One",
-  "prerequisites": [],
+  "prerequisites": [
+    "SAP Business One is open to the Sales Process dashboard",
+    "Customer 'Earthshaker Corporation' exists",
+    "Items 'A00001' to 'A00006' exist"
+  ],
   "steps": [
     {
       "order": 1,
-      "timestamp_s": 19.0,
+      "timestamp_s": 23.0,
       "action": "click",
       "target": "Sales Order",
       "value": null,
       "screen": "Sales Process",
-      "intent": "open up a blank sales order"
+      "intent": "Open a blank sales order"
     },
     {
       "order": 2,
       "timestamp_s": 30.0,
-      "action": "click",
+      "action": "type",
       "target": "Customer",
-      "value": null,
+      "value": "Tab",
       "screen": "Sales Order",
-      "intent": "choose the customer that we want"
+      "intent": "Open the customer list"
     },
     {
       "order": 3,
-      "timestamp_s": 32.0,
+      "timestamp_s": 31.0,
       "action": "select",
       "target": "Earthshaker Corporation",
       "value": null,
       "screen": "List of Business Partners",
-      "intent": "choose the customer that we want"
+      "intent": "Select the customer"
     },
     {
       "order": 4,
@@ -37,118 +41,146 @@
       "target": "Choose",
       "value": null,
       "screen": "List of Business Partners",
-      "intent": "confirm the customer selection"
+      "intent": "Confirm the customer selection"
     },
     {
       "order": 5,
       "timestamp_s": 38.0,
-      "action": "click",
-      "target": "Logistics",
+      "action": "verify",
+      "target": "Ship To",
       "value": null,
       "screen": "Sales Order",
-      "intent": "view logistics information"
+      "intent": "Check the automatically populated shipping and billing information"
     },
     {
       "order": 6,
-      "timestamp_s": 41.0,
-      "action": "click",
+      "timestamp_s": 42.0,
+      "action": "verify",
       "target": "Accounting",
       "value": null,
       "screen": "Sales Order",
-      "intent": "view accounting information"
+      "intent": "Check the automatically populated accounting information"
     },
     {
       "order": 7,
-      "timestamp_s": 57.0,
+      "timestamp_s": 51.0,
+      "action": "verify",
+      "target": "Sales Employee",
+      "value": null,
+      "screen": "Sales Order",
+      "intent": "Note the default sales employee and the ability to change it"
+    },
+    {
+      "order": 8,
+      "timestamp_s": 56.0,
       "action": "click",
       "target": "Contents",
       "value": null,
       "screen": "Sales Order",
-      "intent": "going over to my contents tab"
+      "intent": "Return to the main tab to add items"
     },
     {
-      "order": 8,
-      "timestamp_s": 58.0,
+      "order": 9,
+      "timestamp_s": 57.0,
       "action": "click",
       "target": "Item No.",
       "value": null,
       "screen": "Sales Order",
-      "intent": "adding in items"
+      "intent": "Open the item list"
     },
     {
-      "order": 9,
+      "order": 10,
       "timestamp_s": 65.0,
       "action": "select",
       "target": "A00001",
       "value": null,
       "screen": "List of Items",
-      "intent": "pick and choose specific items"
-    },
-    {
-      "order": 10,
-      "timestamp_s": 70.0,
-      "action": "select",
-      "target": "C00003",
-      "value": null,
-      "screen": "List of Items",
-      "intent": "pick and choose specific items"
+      "intent": "Select the first item"
     },
     {
       "order": 11,
-      "timestamp_s": 71.0,
+      "timestamp_s": 68.0,
+      "action": "select",
+      "target": "A00006",
+      "value": null,
+      "screen": "List of Items",
+      "intent": "Select a group of items using the shift key"
+    },
+    {
+      "order": 12,
+      "timestamp_s": 70.0,
       "action": "click",
       "target": "Choose",
       "value": null,
       "screen": "List of Items",
-      "intent": "put those items in"
-    },
-    {
-      "order": 12,
-      "timestamp_s": 100.0,
-      "action": "click",
-      "target": "Add",
-      "value": null,
-      "screen": "Sales Order",
-      "intent": "save this directly into the system"
+      "intent": "Add the selected items to the order"
     },
     {
       "order": 13,
-      "timestamp_s": 107.0,
+      "timestamp_s": 81.0,
+      "action": "verify",
+      "target": "Unit Price",
+      "value": null,
+      "screen": "Sales Order",
+      "intent": "Check the unit prices"
+    },
+    {
+      "order": 14,
+      "timestamp_s": 82.0,
+      "action": "verify",
+      "target": "Discount %",
+      "value": null,
+      "screen": "Sales Order",
+      "intent": "Check for associated discounts"
+    },
+    {
+      "order": 15,
+      "timestamp_s": 90.0,
+      "action": "verify",
+      "target": "In Stock",
+      "value": null,
+      "screen": "Sales Order",
+      "intent": "Check item availability"
+    },
+    {
+      "order": 16,
+      "timestamp_s": 106.0,
       "action": "type",
       "target": "Delivery Date",
       "value": "06/30/2019",
       "screen": "Sales Order",
-      "intent": "add in that delivery date"
+      "intent": "Set the delivery date for the order"
     },
     {
-      "order": 14,
+      "order": 17,
       "timestamp_s": 109.0,
       "action": "click",
       "target": "Yes",
       "value": null,
       "screen": "Sales Order",
-      "intent": "update all our rows"
+      "intent": "Update the existing table rows with the new delivery date"
     },
     {
-      "order": 15,
-      "timestamp_s": 110.0,
+      "order": 18,
+      "timestamp_s": 111.0,
       "action": "click",
       "target": "Add",
       "value": null,
       "screen": "Sales Order",
-      "intent": "add that into the system"
+      "intent": "Save the sales order to the system"
     },
     {
-      "order": 16,
+      "order": 19,
       "timestamp_s": 114.0,
       "action": "click",
       "target": "Previous Record",
       "value": null,
-      "screen": "Toolbar",
-      "intent": "go back to our previous destination"
+      "screen": "Sales Order",
+      "intent": "View the newly created sales order"
     }
   ],
+  "outcome": "The completed sales order is displayed with the selected customer, items, and delivery date.",
   "pitfalls": [
-    "Failing to enter a Delivery Date before clicking \"Add\" will cause the system to reject the form. You must enter the date and try saving again."
+    "Step 1: The narrator demonstrates opening a blank Sales Order from the left-hand menu and closing it before proceeding to open it from the dashboard."
   ]
 }

@@ -3,40 +3,40 @@
     "order": 1,
     "check": {
       "order": 1,
-      "matches": true,
-      "confidence": 1.0,
-      "note": null
+      "matches": false,
+      "confidence": 0.95,
+      "note": "The user clicks 'Sales Order' in the left Modules menu instead of on the 'Sales Process' screen."
     },
     "error": null,
     "requests": 1,
-    "input_tokens": 3474,
-    "output_tokens": 211
+    "input_tokens": 3473,
+    "output_tokens": 521
   },
   {
     "order": 2,
     "check": {
       "order": 2,
       "matches": true,
-      "confidence": 0.95,
+      "confidence": 0.85,
       "note": null
     },
     "error": null,
     "requests": 1,
-    "input_tokens": 3473,
-    "output_tokens": 411
+    "input_tokens": 3476,
+    "output_tokens": 934
   },
   {
     "order": 3,
     "check": {
       "order": 3,
       "matches": false,
-      "confidence": 0.9,
-      "note": "opening the 'List of Business Partners' window"
+      "confidence": 0.95,
+      "note": "The user is opening the 'List of Business Partners' window by clicking the Customer lookup button"
     },
     "error": null,
     "requests": 1,
-    "input_tokens": 3478,
-    "output_tokens": 2830
+    "input_tokens": 3475,
+    "output_tokens": 270
   },
   {
     "order": 4,
@@ -49,64 +49,77 @@
     "error": null,
     "requests": 1,
     "input_tokens": 3473,
-    "output_tokens": 389
+    "output_tokens": 178
   },
   {
     "order": 5,
     "check": {
       "order": 5,
+      "matches": false,
+      "confidence": 0.85,
+      "note": "clicking the 'Logistics' tab"
+    },
+    "error": null,
+    "requests": 1,
+    "input_tokens": 3476,
+    "output_tokens": 900
+  },
+  {
+    "order": 6,
+    "check": {
+      "order": 6,
       "matches": true,
       "confidence": 1.0,
       "note": null
     },
     "error": null,
     "requests": 1,
-    "input_tokens": 3471,
-    "output_tokens": 121
-  },
-  {
-    "order": 6,
-    "check": {
-      "order": 6,
-      "matches": false,
-      "confidence": 0.9,
-      "note": "The cursor is interacting with the address field and only reaches the 'Accounting' tab in the final frame, where the tab has not yet been clicked."
-    },
-    "error": null,
-    "requests": 1,
-    "input_tokens": 3470,
-    "output_tokens": 4964
+    "input_tokens": 3473,
+    "output_tokens": 174
   },
   {
     "order": 7,
     "check": {
       "order": 7,
       "matches": true,
-      "confidence": 0.95,
+      "confidence": 1.0,
       "note": null
     },
     "error": null,
     "requests": 1,
-    "input_tokens": 3473,
-    "output_tokens": 336
+    "input_tokens": 3479,
+    "output_tokens": 206
   },
   {
     "order": 8,
     "check": {
       "order": 8,
       "matches": true,
-      "confidence": 0.95,
+      "confidence": 1.0,
       "note": null
     },
     "error": null,
     "requests": 1,
-    "input_tokens": 3471,
-    "output_tokens": 237
+    "input_tokens": 3475,
+    "output_tokens": 192
   },
   {
     "order": 9,
     "check": {
       "order": 9,
+      "matches": true,
+      "confidence": 0.95,
+      "note": null
+    },
+    "error": null,
+    "requests": 1,
+    "input_tokens": 3472,
+    "output_tokens": 353
+  },
+  {
+    "order": 10,
+    "check": {
+      "order": 10,
       "matches": true,
       "confidence": 1.0,
       "note": null
@@ -114,33 +127,20 @@
     "error": null,
     "requests": 1,
     "input_tokens": 3478,
-    "output_tokens": 209
-  },
-  {
-    "order": 10,
-    "check": {
-      "order": 10,
-      "matches": true,
-      "confidence": 0.95,
-      "note": null
-    },
-    "error": null,
-    "requests": 1,
-    "input_tokens": 3479,
-    "output_tokens": 891
+    "output_tokens": 205
   },
   {
     "order": 11,
     "check": {
       "order": 11,
-      "matches": true,
-      "confidence": 1.0,
-      "note": null
+      "matches": false,
+      "confidence": 0.95,
+      "note": "The frames show 'B10000' being selected or the list being scrolled, with 'A00006' already selected."
     },
     "error": null,
     "requests": 1,
-    "input_tokens": 3473,
-    "output_tokens": 187
+    "input_tokens": 3483,
+    "output_tokens": 2181
   },
   {
     "order": 12,
@@ -152,34 +152,34 @@
     },
     "error": null,
     "requests": 1,
-    "input_tokens": 3475,
-    "output_tokens": 180
+    "input_tokens": 3476,
+    "output_tokens": 215
   },
   {
     "order": 13,
     "check": {
       "order": 13,
       "matches": true,
-      "confidence": 1.0,
+      "confidence": 0.95,
       "note": null
     },
     "error": null,
     "requests": 1,
-    "input_tokens": 3489,
-    "output_tokens": 314
+    "input_tokens": 3473,
+    "output_tokens": 916
   },
   {
     "order": 14,
     "check": {
       "order": 14,
       "matches": true,
-      "confidence": 1.0,
+      "confidence": 0.95,
       "note": null
     },
     "error": null,
     "requests": 1,
     "input_tokens": 3473,
-    "output_tokens": 217
+    "output_tokens": 222
   },
   {
     "order": 15,
@@ -191,20 +191,59 @@
     },
     "error": null,
     "requests": 1,
-    "input_tokens": 3474,
-    "output_tokens": 306
+    "input_tokens": 3472,
+    "output_tokens": 293
   },
   {
     "order": 16,
     "check": {
       "order": 16,
       "matches": true,
+      "confidence": 0.95,
+      "note": null
+    },
+    "error": null,
+    "requests": 1,
+    "input_tokens": 3491,
+    "output_tokens": 215
+  },
+  {
+    "order": 17,
+    "check": {
+      "order": 17,
+      "matches": true,
       "confidence": 1.0,
       "note": null
     },
     "error": null,
     "requests": 1,
-    "input_tokens": 3475,
-    "output_tokens": 317
+    "input_tokens": 3479,
+    "output_tokens": 169
+  },
+  {
+    "order": 18,
+    "check": {
+      "order": 18,
+      "matches": true,
+      "confidence": 1.0,
+      "note": null
+    },
+    "error": null,
+    "requests": 1,
+    "input_tokens": 3476,
+    "output_tokens": 146
+  },
+  {
+    "order": 19,
+    "check": {
+      "order": 19,
+      "matches": true,
+      "confidence": 1.0,
+      "note": null
+    },
+    "error": null,
+    "requests": 1,
+    "input_tokens": 3476,
+    "output_tokens": 282
   }
 ]
