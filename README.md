@@ -195,6 +195,14 @@ Automatic deletion is roadmap.
   Limoncelli's seven runbook sections the guide cites, a task recording can
   only source "Instructions for Common Tasks"; title and system stand in for the service
   overview, and the other five are documents about a service, not a task.
+- **Page styling follows the Vercel Geist reference (`DESIGN.md`).** Near-black ink on a
+  near-white canvas, hairline cards, Geist Sans for copy and Geist Mono for the section
+  eyebrows and the time and action columns, 6px square buttons because the page is an app
+  surface. The flagged badge is the one solid fill on the page: the caught step is the
+  demo's moment. Verified is green where the reference maps success to its link blue,
+  because on a projector green against red reads as pass against fail. The reference's
+  marketing pieces (hero, mesh gradient, pill buttons) were left out for the same reason:
+  this is the app, not the landing page.
 
 ## Eval scores
 
