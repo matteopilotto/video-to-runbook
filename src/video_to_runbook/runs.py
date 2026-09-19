@@ -30,6 +30,15 @@ def read_runbook(run_dir: Path) -> Runbook:
     return Runbook.model_validate_json((run_dir / "runbook.json").read_text())
 
 
+def write_plan(run_dir: Path, payload: str) -> None:
+    (run_dir / "plan.json").write_text(payload)
+
+
+def read_plan(run_dir: Path) -> str | None:
+    path = run_dir / "plan.json"
+    return path.read_text() if path.exists() else None
+
+
 def write_check(run_dir: Path, record: CheckRecord) -> None:
     checks = run_dir / "checks"
     checks.mkdir(exist_ok=True)
@@ -61,6 +70,16 @@ def read_status(run_dir: Path) -> RunStatus:
         video_url=f"/runs/{meta.run_id}/video",
         runbook=runbook,
         checks=checks,
+        plan_state=meta.plan_state,
+        plan_error=meta.plan_error,
+        plan_validated=meta.plan_validated,
+        plan_rounds=meta.plan_rounds,
+        plan_issues=meta.plan_issues,
+        exec_state=meta.exec_state,
+        exec_live=meta.exec_live,
+        exec_error=meta.exec_error,
+        exec_steps=meta.exec_steps,
+        exec_failed=meta.exec_failed,
     )
 
 

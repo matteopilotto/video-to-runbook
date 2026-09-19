@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     logfire_project_url: str | None = None
     observer_model: str = "gemini-3.1-pro-preview"
     validator_model: str = "gemini-3.8-flash"
+    planner_model: str = "google:gemini-3.5-flash"
+    catalog_path: Path = Path("/root/catalog.json")
     call_cap: int = 100
     observer_request_limit: int = 4
     check_request_limit: int = 3

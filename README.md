@@ -71,6 +71,59 @@ uv run --env-file .env pytest -m integration
 RECORD_FIXTURES=1 uv run --env-file .env pytest -m integration   # rewrites tests/fixtures/sap/
 ```
 
+## SOP executor: from runbook to a real SAP document
+
+The runbook the Observer produces is a description. This turns it into an
+execution: the runbook is compiled into a typed, schema-checked plan of SAP
+Business One Service Layer calls, and that plan is run against a live ERP.
+
+```
+video → Runbook → render_markdown() → compile_plan() → ExecutionPlan → sop_worker.py → SAP
+                                         (Modal)                        (your machine)
+```
+
+### Nothing in the cloud can touch the ERP
+
+`compile_plan` talks only to Gemini and a catalogue on local disk. It holds no SAP
+credentials and has no route to the Service Layer. Pressing **Run executor** does
+not execute anything; it records `exec_state = "requested"` on the run and stops.
+
+`sop_worker.py` runs on an operator's machine, polls the Volume for those requests,
+executes the plan from there, and writes the trace back. SAP credentials, the SAP
+hostname and the ERP session never leave that machine. A stranger who found the
+`*.modal.run` URL could compile plans and spend Gemini credit, but could not create
+a document in your ERP, because nothing deployed is privileged enough to.
+
+### Setup
+
+The SAP catalogue is not in this repo: it describes the ERP configuration in full.
+Build it from your own Service Layer with `build_catalog.py` from
+[runaxial/sop-executor](https://github.com/runaxial/sop-executor), then drop the
+resulting `catalog.json` in the repo root. The image ships it to `/root/catalog.json`.
+
+### Using it
+
+Two buttons appear under the runbook.
+
+**Generate instructions** is enabled once the run reaches `done`. It compiles the
+runbook, checks the plan against the real SAP schema, and feeds any errors back to
+the model for up to three repair rounds. The bar reports rounds used and whether the
+plan validated clean; `plan.json` has the whole thing.
+
+**Run executor** is enabled once a plan exists, and queues it. Start the worker on
+the machine that reaches SAP:
+
+```bash
+export B1_COMPANY=... B1_USER=... B1_PASS=...
+uv run python sop_worker.py --insecure        # SAP B1 ships a self-signed cert
+```
+
+It prompts for the plan's inputs, runs it, and the page fills in with the step trace.
+
+**Dry run is the default and still reads your live ERP.** It issues real GETs for
+orders and stock; only writes are withheld and logged instead. The **live** checkbox
+creates real documents and is disabled until the plan validates with zero errors.
+
 ## Run the demo
 
 Serve the app from this machine with hot reload; the first run builds the image, about two
