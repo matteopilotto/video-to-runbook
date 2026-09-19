@@ -35,9 +35,9 @@ modal serve src/video_to_runbook/app.py      # local endpoints with hot reload
 modal deploy src/video_to_runbook/app.py
 ```
 
-None of these exist yet. The first code commit creates `pyproject.toml`, `ruff`, `pytest`,
-and `.github/workflows/ci.yml` running the two CI lines; add each remaining command in the
-commit that makes it real.
+The three gate lines and the integration line run today; `.github/workflows/ci.yml` runs
+the two CI lines on every push. The eval and `modal` commands arrive in the commits that
+create `eval.py` and `app.py`.
 
 ## Working rules
 
