@@ -131,6 +131,7 @@ Tamper runs (SC-005, each one a fresh upload, SAP unless noted; the tampered ste
 | 2026-09-19 | step 7 | flagged with a note, footer "Demo tamper: step 7"; browser run, flagged row expands to the note on click |
 | 2026-09-19 | none | 17 steps, 4 flagged (steps 1 to 3 and 14) with notes, 18 calls, 115 s; deployed app, first run with validator spans joined to the trace |
 | 2026-09-19 | step 3, AI Studio clip | flagged, note "selects the 'Generative Language Client' project from the list, not a log out menu item"; 7 steps, 8 calls, 67 s; export downloads with statuses and the note; deployed app |
+| 2026-09-19 | step 3, AI Studio clip | flagged, note "selecting a Google Cloud project ('Generative Language Client') rather than a 'Log Out' menu item"; 6 steps, 7 calls, 43 s with the warm container; browser run, row click seeks the player, footer shows tamper notice and trace link |
 
 The cap path was seen on the page when a 20-step runbook tripped the old 60-call budget
 (red banner, amber error badges, state `failed`). The forced-cap rehearsal with `CALL_CAP=2`
