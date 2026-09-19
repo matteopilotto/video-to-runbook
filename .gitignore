@@ -7,3 +7,6 @@ __pycache__/
 samples/raw/
 samples/sheets/
 samples/*.mp4
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
