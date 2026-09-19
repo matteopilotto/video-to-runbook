@@ -53,7 +53,7 @@ if not modal.is_local():
 GEMINI_REGION = "us"
 
 
-@app.function(timeout=900, region=GEMINI_REGION)
+@app.function(timeout=900, region=GEMINI_REGION, min_containers=1)
 async def observe(run_id: str) -> None:
     settings = get_settings()
     await volume.reload.aio()
