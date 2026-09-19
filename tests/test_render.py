@@ -1,14 +1,19 @@
+import json
 import re
 from pathlib import Path
 
 import pytest
+from markupsafe import escape
 
-from video_to_runbook.models import Runbook, RunStatus
+from video_to_runbook.models import CheckRecord, Runbook, RunStatus
 from video_to_runbook.render import render_fragment
 
 
 def status_for(
-    runbook: Runbook | None, state: str = "checking", error: str | None = None
+    runbook: Runbook | None,
+    state: str = "checking",
+    error: str | None = None,
+    checks: list[CheckRecord] | None = None,
 ) -> RunStatus:
     return RunStatus(
         run_id="3f9a1c2b7d4e",
@@ -25,13 +30,19 @@ def status_for(
         output_tokens=5,
         video_url="/runs/3f9a1c2b7d4e/video",
         runbook=runbook,
-        checks=[],
+        checks=checks or [],
     )
 
 
 @pytest.fixture
 def sap_runbook(fixtures_dir: Path) -> Runbook:
     return Runbook.model_validate_json((fixtures_dir / "runbook.json").read_text())
+
+
+@pytest.fixture
+def sap_checks(fixtures_dir: Path) -> list[CheckRecord]:
+    records = json.loads((fixtures_dir / "checks.json").read_text())
+    return [CheckRecord.model_validate(record) for record in records]
 
 
 def rows(html: str) -> list[tuple[str, str]]:
@@ -61,3 +72,30 @@ def test_fragment_shows_watching_message_before_runbook() -> None:
 def test_fragment_shows_error_when_failed() -> None:
     html = render_fragment(status_for(None, state="failed", error="observer exhausted retries"))
     assert "observer exhausted retries" in html
+
+
+def test_fragment_badges_follow_the_checks(
+    sap_runbook: Runbook, sap_checks: list[CheckRecord]
+) -> None:
+    unchecked, *checks = sap_checks
+    checks[-1] = CheckRecord(order=checks[-1].order, error="timed out")
+    html = render_fragment(status_for(sap_runbook, checks=checks))
+
+    expected = {record.order: record.badge for record in checks}
+    expected[unchecked.order] = "checking"
+    found = dict(re.findall(r'data-order="(\d+)".*?class="badge (\w+)"', html, flags=re.DOTALL))
+    assert {int(order): badge for order, badge in found.items()} == expected
+
+    flagged = [record for record in checks if record.badge == "flagged"]
+    assert flagged, "the fixture needs at least one flagged check"
+    details = re.findall(r"<details.*?</details>", html, flags=re.DOTALL)
+    assert len(details) == len(flagged)
+    for record, block in zip(flagged, details, strict=True):
+        assert f'data-order="{record.order}"' in block
+        assert 'class="badge flagged"' in block
+        assert record.check is not None and record.check.note is not None
+        assert str(escape(record.check.note)) in block
+
+    assert '<span class="badge error">error</span>' in html
+    assert 'title="timed out"' in html
+    assert '<span class="badge checking">checking</span>' in html
