@@ -8,6 +8,16 @@
 
 **Input**: User description: handoff document `/tmp/video-to-runbook-handoff-2026-09-19.md`, whose suggested first feature is "Observer pipeline end to end: upload a recording, a validated runbook comes back, per-step frame validation fans out in parallel, a single-page UI shows badges and seeks the video, and the run is traced. Include the output validator with retry and the eval in scope; leave the frame tool and the reusable capability as follow-ups. Keep executors, auth, multi-user, and gateway out."
 
+## Clarifications
+
+### Session 2026-09-19
+
+- Q: How should the eval pair a produced step with a ground-truth step before scoring action match and timestamp agreement? → A: For each ground-truth step, in order, take the nearest not-yet-paired produced step within 3 s after offset correction. Timestamp agreement is the share of ground-truth steps that got a pair; action match is the share of pairs with the same action.
+- Q: What should the eval's "check agreement rate" measure? → A: The share of steps in an untampered run whose check verdict is "verified", read from the run's existing check results; the eval adds no model calls beyond the run itself.
+- Q: How should the demo tamper choose which step to alter? → A: The hidden page parameter carries the step number to tamper. If the runbook has fewer steps than that number, nothing is tampered and the footer says so.
+- Q: How long should uploaded recordings and their results be kept on the server after a run finishes? → A: Kept until cleared by hand. No automatic deletion in this feature; the README states this and lists deletion as roadmap.
+- Q: How many model calls should a single run be allowed before the cap trips and the run fails? → A: A fixed cap of 60 calls per run, counted across the watching call, its retries, and every check and check retry.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Turn a recording into a runbook (Priority: P1)
@@ -42,8 +52,9 @@ As soon as the runbook lands, every step carries a grey "checking" badge. Each s
 2. **Given** a check finds the video at that moment shows what the step describes, **When** its result arrives, **Then** the badge becomes "verified".
 3. **Given** a check finds the video does not show what the step describes, **When** its result arrives, **Then** the badge becomes "flagged", and clicking the row reveals the check's note.
 4. **Given** a check could not be completed (the model did not answer in time or returned an unusable result after the allowed retries), **When** the run records it, **Then** the badge becomes "error", visually distinct from "flagged", and the step is not removed.
-5. **Given** the demo tamper is switched on through a hidden page parameter, **When** checks run, **Then** exactly one step's target has been altered before checking and that step ends up "flagged" with a note describing the mismatch.
-6. **Given** every check has finished, **When** the page polls next, **Then** the footer shows elapsed time, model token usage, and a link to the run's trace.
+5. **Given** the hidden page parameter names step 7 and the runbook has at least 7 steps, **When** checks run, **Then** only step 7's target has been altered before checking and step 7 ends up "flagged" with a note describing the mismatch.
+6. **Given** the hidden page parameter names step 20 and the runbook has 14 steps, **When** checks run, **Then** no step is altered and the footer states that the tamper did not apply.
+7. **Given** every check has finished, **When** the page polls next, **Then** the footer shows elapsed time, model token usage, and a link to the run's trace.
 
 ---
 
@@ -79,7 +90,7 @@ The operator presses an export button and downloads the runbook as a Markdown fi
 
 ### User Story 5 - Measure observer accuracy against ground truth (Priority: P5)
 
-A maintainer runs one command that scores the watching system against the two ground-truth step tables in `samples/README.md` and prints the result. The score covers how close the step count is, how many matched steps have the same action, how many matched steps land within 3 seconds of the recorded moment, and how often the per-step check agrees with the runbook. The latest numbers are kept in the project README so a change that makes things worse is visible.
+A maintainer runs one command that scores the watching system against the two ground-truth step tables in `samples/README.md` and prints the result. The score covers how close the step count is, how many matched steps have the same action, how many matched steps land within 3 seconds of the recorded moment, and what share of steps the per-step check marked "verified". The latest numbers are kept in the project README so a change that makes things worse is visible.
 
 **Why this priority**: "It looked right on one video" is not evidence. The eval turns prompt changes into a number that can go down. It runs outside the page and needs only User Story 1 output.
 
@@ -87,7 +98,7 @@ A maintainer runs one command that scores the watching system against the two gr
 
 **Acceptance Scenarios**:
 
-1. **Given** the SAP sample and its ground-truth table, **When** the eval runs, **Then** it prints step-count difference, action match rate, timestamp agreement rate within 3 seconds, and check agreement rate for that case.
+1. **Given** the SAP sample and its ground-truth table, **When** the eval runs, **Then** it pairs steps by the rule in FR-027a and prints step-count difference, timestamp agreement rate (ground-truth steps paired within 3 seconds), action match rate on the pairs, and check agreement rate for that case.
 2. **Given** the ground-truth tables use the original video's clock, **When** moments are compared, **Then** the eval first subtracts the cut offset (10 s for the SAP demo clip, 14.6 s for the AI Studio clip).
 3. **Given** both sample cases are available, **When** the eval runs on both, **Then** it prints an overall score as well as per-case scores.
 4. **Given** the eval has run, **When** the maintainer opens the run's trace, **Then** the eval results are visible there too.
@@ -150,7 +161,7 @@ A maintainer or judge filters the trace viewer by a run reference and sees the w
 - **FR-014**: A check result MUST state whether the video matches the step, a confidence, and, when it does not match, a note explaining the disagreement.
 - **FR-015**: Each step badge MUST be in exactly one of four states: checking, verified, flagged, error. Error (the check could not complete) MUST be visually distinct from flagged (the check disagreed). A step MUST never be dropped from the list because of its check.
 - **FR-016**: Badges MUST update individually as their checks finish, without waiting for the others.
-- **FR-017**: A hidden page parameter MUST alter one step's target before checks run, so a flagged step can be guaranteed during a demonstration. The README MUST describe this parameter plainly.
+- **FR-017**: A hidden page parameter carrying a step number MUST alter that step's target before checks run, so a flagged step can be guaranteed during a demonstration. When the parameter is absent nothing is altered. When the runbook has fewer steps than the given number, nothing is altered and the footer says so. The README MUST describe this parameter plainly.
 
 #### Page
 
@@ -163,13 +174,16 @@ A maintainer or judge filters the trace viewer by a run reference and sees the w
 #### Reliability and observability
 
 - **FR-023**: Every call to the watching or checking model MUST have a timeout and a bounded number of retries.
-- **FR-024**: Every run MUST count its model calls and stop at a fixed cap; reaching the cap MUST mark the run as failed on the page and record an error-level event in the trace.
+- **FR-024**: Every run MUST count its model calls, across the watching call, its retries, and every check and check retry, and stop at a fixed cap of 60 calls; reaching the cap MUST mark the run as failed on the page and record an error-level event in the trace.
 - **FR-025**: Every run MUST be traceable as one tree by run reference and video name, showing the watching call, each rejected output and retry, one span per step check, and token usage.
 - **FR-026**: Model and trace credentials MUST be read from the environment and never stored in the repository.
+- **FR-026a**: Uploaded recordings, runbooks, and check results MUST be kept on the server until cleared by hand. This feature performs no automatic deletion; the README MUST state this and list a retention policy as roadmap.
 
 #### Evaluation and tests
 
 - **FR-027**: One command MUST score the watching system against both ground-truth tables in `samples/README.md`, subtracting each clip's cut offset first, and print per-case and overall scores for step-count difference, action match rate, timestamp agreement within 3 seconds, and check agreement rate. The latest scores MUST be recorded in the project README.
+- **FR-027a**: Pairing rule for the eval: for each ground-truth step, in table order, pair it with the nearest not-yet-paired produced step whose moment is within 3 seconds after offset correction; a ground-truth step with no such produced step stays unpaired. Timestamp agreement is the share of ground-truth steps that got a pair. Action match is the share of pairs whose actions are identical.
+- **FR-027b**: Check agreement rate is the share of steps in an untampered run whose check verdict is "verified", taken from the run's own check results. The eval MUST NOT issue extra check calls to compute it; steps whose check ended in "error" count as not verified.
 - **FR-028**: The default test run MUST complete without network access or credentials, using recorded runbook and check fixtures for the SAP sample; tests that reach the model MUST be opt-in and skip cleanly when credentials are absent.
 
 ### Key Entities
@@ -186,7 +200,7 @@ A maintainer or judge filters the trace viewer by a run reference and sees the w
 
 ### Measurable Outcomes
 
-- **SC-001**: For the SAP sample, the produced runbook's step count is within 4 of the 14 ground-truth steps, at least 70% of matched steps carry the same action, and at least 70% of matched steps land within 3 seconds of the ground-truth moment after offset correction.
+- **SC-001**: For the SAP sample, the produced runbook's step count is within 4 of the 14 ground-truth steps, at least 70% of the 14 ground-truth steps are paired with a produced step within 3 seconds after offset correction, and at least 70% of those pairs carry the same action.
 - **SC-002**: From dropping a 2-minute recording to every badge reaching a terminal state takes under 3 minutes on the demo network.
 - **SC-003**: The video is visible in the player and the "watching" state is shown within 5 seconds of dropping a 10 MB recording.
 - **SC-004**: At the end of every run, 100% of steps show one of verified, flagged, or error; no step is missing and no badge is left at "checking".
@@ -201,8 +215,8 @@ A maintainer or judge filters the trace viewer by a run reference and sees the w
 - Recordings are screen captures of roughly 720p, between 30 seconds and 3 minutes long, under 100 MB, in a common video container, with or without narration. The two sample clips are 118 s and 51 s at 5 to 7 MB.
 - Ground-truth moments in `samples/README.md` are on the original video's clock; the SAP demo clip starts 10 s later and the AI Studio clip 14.6 s later, and the eval subtracts these offsets.
 - The eval thresholds in SC-001 are opening targets chosen so a regression is visible, not a promise of accuracy; they can be tightened once the first scores are recorded.
-- The per-run model-call cap is a fixed configured number, sized so a 15-step runbook with a few rejected outputs and check retries completes but a runaway loop cannot burn shared credits.
-- A single operator uses the page at a time on stage; two simultaneous runs must not interfere, but there is no user identity, no run history, and no persistence promise beyond the current session.
+- The per-run model-call cap of 60 (FR-024) covers a 20-step runbook with three watching attempts and every check retried twice, so a healthy run never trips it, while a runaway loop is stopped after a few dozen cheap calls.
+- A single operator uses the page at a time on stage; two simultaneous runs must not interfere, but there is no user identity and no run history on the page. Files stay on the server until cleared by hand (FR-026a); the only recordings expected during the build are the two public sample clips.
 - Reloading the page abandons the view of the current run; resuming a run from its reference is not required.
 - The demo tamper is a documented demonstration aid, disclosed plainly if asked, not a hidden behaviour of normal runs.
 - The watching model returns moments as MM:SS by habit; the system converts rather than instructs it out of that habit.
