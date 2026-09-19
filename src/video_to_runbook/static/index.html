@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Video to Runbook</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --grey: #8a8f98; --green: #1f8f4e; --red: #c92a2a; --amber: #d9820b; --line: #e3e5e8; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; color: #1c1e21; background: #fafafa; }
+  header { padding: 12px 20px; border-bottom: 1px solid var(--line); background: #fff; }
+  header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+  main { display: grid; grid-template-columns: minmax(320px, 2fr) 3fr; gap: 20px; padding: 20px; min-height: calc(100vh - 110px); }
+  #left, #right { min-width: 0; }
+  #dropzone { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; height: 320px; border: 2px dashed #b7bcc4; border-radius: 10px; background: #fff; cursor: pointer; text-align: center; padding: 20px; }
+  #dropzone.over { border-color: var(--green); background: #f2fbf5; }
+  #dropzone .hint { color: var(--grey); font-size: 13px; }
+  #dropzone .reason { color: var(--red); }
+  #dropzone input { display: none; }
+  video { width: 100%; border-radius: 10px; background: #000; display: none; }
+  #right .state { color: var(--grey); }
+  .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--line); border-top-color: var(--grey); border-radius: 50%; animation: spin 0.9s linear infinite; vertical-align: -2px; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  h2 { margin: 0 0 4px; font-size: 20px; }
+  .system { margin: 0 0 12px; color: var(--grey); }
+  h3 { margin: 16px 0 6px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--grey); }
+  table.steps { width: 100%; border-collapse: collapse; background: #fff; font-size: 14px; }
+  table.steps th, table.steps td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  table.steps th { font-weight: 600; color: var(--grey); font-size: 12px; text-transform: uppercase; }
+  table.steps tbody tr { cursor: pointer; }
+  table.steps tbody tr:hover { background: #f4f6f8; }
+  td.time { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.action { font-family: ui-monospace, monospace; font-size: 13px; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; }
+  .badge.checking { background: var(--grey); }
+  .badge.verified { background: var(--green); }
+  .badge.flagged { background: var(--red); }
+  .badge.error { background: var(--amber); }
+  .banner { padding: 10px 12px; border-radius: 8px; background: #fdecec; color: var(--red); margin-bottom: 12px; }
+  footer { padding: 10px 20px; border-top: 1px solid var(--line); background: #fff; color: var(--grey); font-size: 13px; display: flex; gap: 20px; min-height: 40px; }
+</style>
+</head>
+<body>
+<header><h1>Video to Runbook</h1></header>
+<main>
+  <section id="left">
+    <label id="dropzone">
+      <input type="file" id="file" accept="video/*">
+      <strong>Drop a screen recording here</strong>
+      <span class="hint">or click to choose a file. Video only, up to 100 MB.</span>
+      <span class="reason" id="reason"></span>
+    </label>
+    <video id="video" controls preload="metadata"></video>
+  </section>
+  <section id="right">
+    <p class="state">Drop a screen recording to begin</p>
+  </section>
+</main>
+<footer>
+  <span id="elapsed"></span>
+  <span id="calls"></span>
+</footer>
+<script>
+  const MAX_BYTES = 100 * 1024 * 1024;
+  const dropzone = document.getElementById("dropzone");
+  const fileInput = document.getElementById("file");
+  const reason = document.getElementById("reason");
+  const video = document.getElementById("video");
+  const right = document.getElementById("right");
+  const elapsedEl = document.getElementById("elapsed");
+  const callsEl = document.getElementById("calls");
+
+  let runId = null;
+  let startedAt = null;
+  let pollTimer = null;
+  let tickTimer = null;
+
+  function setRight(html) { right.innerHTML = html; }
+
+  function refuse(file) {
+    if (!file.type.startsWith("video/")) return "That is not a video file.";
+    if (file.size > MAX_BYTES) return "That file is over 100 MB.";
+    return null;
+  }
+
+  async function upload(file) {
+    const why = refuse(file);
+    if (why) { reason.textContent = why; return; }
+    reason.textContent = "";
+    dropzone.querySelector("strong").textContent = "Uploading " + file.name + "…";
+    setRight('<p class="state">Uploading…</p>');
+    const body = new FormData();
+    body.append("file", file, file.name);
+    const response = await fetch("/runs", { method: "POST", body });
+    if (!response.ok) {
+      dropzone.querySelector("strong").textContent = "Drop a screen recording here";
+      reason.textContent = "Upload failed: " + response.status + " " + (await response.text());
+      setRight('<p class="state">Drop a screen recording to begin</p>');
+      return;
+    }
+    runId = (await response.json()).run_id;
+    startedAt = Date.now();
+    dropzone.style.display = "none";
+    video.src = "/runs/" + runId + "/video";
+    video.style.display = "block";
+    video.pause();
+    setRight('<p class="state"><span class="spinner"></span> Watching the recording…</p>');
+    tickTimer = setInterval(tick, 1000);
+    tick();
+    pollTimer = setInterval(poll, 2000);
+    poll();
+  }
+
+  function tick() {
+    const seconds = Math.floor((Date.now() - startedAt) / 1000);
+    elapsedEl.textContent = "elapsed " + seconds + " s";
+  }
+
+  async function poll() {
+    const response = await fetch("/status/" + runId);
+    if (response.status === 404) {
+      clearInterval(pollTimer);
+      clearInterval(tickTimer);
+      setRight('<p class="state">Run not found</p>');
+      return;
+    }
+    if (!response.ok) return;
+    const status = await response.json();
+    callsEl.textContent = "calls " + status.calls;
+    const fragment = await fetch("/runs/" + runId + "/runbook.html");
+    if (fragment.ok) setRight(await fragment.text());
+  }
+
+  fileInput.addEventListener("change", () => { if (fileInput.files[0]) upload(fileInput.files[0]); });
+  dropzone.addEventListener("dragover", (event) => { event.preventDefault(); dropzone.classList.add("over"); });
+  dropzone.addEventListener("dragleave", () => dropzone.classList.remove("over"));
+  dropzone.addEventListener("drop", (event) => {
+    event.preventDefault();
+    dropzone.classList.remove("over");
+    const file = event.dataTransfer.files[0];
+    if (file) upload(file);
+  });
+</script>
+</body>
+</html>
