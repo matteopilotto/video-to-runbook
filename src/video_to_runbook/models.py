@@ -87,6 +87,16 @@ class Runbook(BaseModel):
                 )
         return self
 
+    @model_validator(mode="after")
+    def typed_steps_carry_values(self) -> "Runbook":
+        for step in self.steps:
+            if step.action == "type" and not (step.value and step.value.strip()):
+                raise ValueError(
+                    f"step {step.order} types into '{step.target}' but has no value; "
+                    "record what was typed"
+                )
+        return self
+
 
 class StepCheck(BaseModel):
     order: int

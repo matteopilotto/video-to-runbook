@@ -134,3 +134,13 @@ def test_run_status_round_trips() -> None:
     assert again == status
     assert again.badge_for(1) == "error"
     assert again.badge_for(2) == "checking"
+
+
+def test_type_step_needs_a_value() -> None:
+    with pytest.raises(ValidationError, match="step 2 types into 'Customer' but has no value"):
+        Runbook(**runbook(step(1), step(2, action="type", target="Customer")))
+
+
+def test_type_step_with_a_key_name_is_accepted() -> None:
+    rb = Runbook(**runbook(step(1), step(2, action="type", target="Customer", value="Tab")))
+    assert rb.steps[1].value == "Tab"
