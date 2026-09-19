@@ -22,17 +22,18 @@
   }
   * { box-sizing: border-box; }
   body { margin: 0; font: 400 14px/20px var(--sans); color: var(--body); background: var(--canvas); }
-  header { padding: 12px 20px; border-bottom: 1px solid var(--hairline); background: #fff; }
-  header h1 { margin: 0; font-size: 18px; font-weight: 600; color: var(--ink); }
-  main { display: grid; grid-template-columns: minmax(320px, 2fr) 3fr; gap: 20px; padding: 20px; min-height: calc(100vh - 110px); }
+  header { padding: 12px 24px; border-bottom: 1px solid var(--hairline); background: var(--canvas); }
+  header h1 { margin: 0; font-size: 14px; line-height: 20px; font-weight: 500; letter-spacing: -0.28px; color: var(--ink); }
+  main { display: grid; grid-template-columns: minmax(320px, 2fr) 3fr; gap: 24px; padding: 24px; min-height: calc(100vh - 90px); }
+  @media (max-width: 768px) { main { grid-template-columns: 1fr; } }
   #left, #right { min-width: 0; }
-  #dropzone { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; height: 320px; border: 2px dashed #b7bcc4; border-radius: 10px; background: #fff; cursor: pointer; text-align: center; padding: 20px; }
+  #dropzone { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; height: 320px; border: 1px dashed var(--faint); border-radius: var(--r-md); background: var(--elevated); cursor: pointer; text-align: center; padding: 24px; }
   #dropzone.over { border-color: var(--link); background: var(--link-soft); }
   #dropzone strong { color: var(--ink); font-weight: 500; }
   #dropzone .hint { color: var(--mute); font-size: 12px; }
   #dropzone .reason { color: var(--error); }
   #dropzone input { display: none; }
-  video { width: 100%; border-radius: 10px; background: #000; display: none; }
+  video { width: 100%; border: 1px solid var(--hairline); border-radius: var(--r-md); background: #000; display: none; }
   #right .state { color: var(--mute); }
   .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--hairline); border-top-color: var(--mute); border-radius: 50%; animation: spin 0.9s linear infinite; vertical-align: -2px; margin-right: 6px; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -55,9 +56,11 @@
   .badge.error { background: var(--warning-soft); color: var(--warning-deep); }
   .badge.error::before { content: "\26A0\FE0E "; }
   .banner { padding: 10px 12px; border-radius: 8px; background: var(--elevated); border: 1px solid var(--error); color: var(--error); margin-bottom: 12px; }
-  #export { display: none; margin-left: auto; color: var(--ink); font-weight: 500; text-decoration: none; }
-  #export[href] { display: inline; }
-  footer { padding: 10px 20px; border-top: 1px solid var(--hairline); background: #fff; color: var(--mute); font-size: 13px; display: flex; gap: 20px; min-height: 40px; }
+  #export { display: none; margin-left: auto; padding: 4px 10px; border-radius: var(--r-sm); background: var(--ink); color: #fff; font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none; }
+  #export[href] { display: inline-block; }
+  footer { padding: 12px 24px; border-top: 1px solid var(--hairline); background: var(--canvas); color: var(--mute); font-size: 12px; line-height: 16px; display: flex; align-items: center; gap: 24px; min-height: 52px; }
+  #elapsed, #calls, #tokens { font-family: var(--mono); }
+  #trace a { color: var(--link); text-decoration: none; }
 </style>
 </head>
 <body>
