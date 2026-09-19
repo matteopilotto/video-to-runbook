@@ -64,7 +64,7 @@ def test_runbook_needs_at_least_one_step() -> None:
         Runbook(**runbook())
 
 
-@pytest.mark.parametrize("target", ["the button", "IT"])
+@pytest.mark.parametrize("target", ["the button", "HERE"])
 def test_generic_target_named_by_step_order(target: str) -> None:
     with pytest.raises(ValidationError, match="step 3 target"):
         Runbook(**runbook(step(1), step(2), step(3, target=target)))
