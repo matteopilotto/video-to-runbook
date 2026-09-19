@@ -22,9 +22,10 @@
   }
   * { box-sizing: border-box; }
   body { margin: 0; font: 400 14px/20px var(--sans); color: var(--body); background: var(--canvas); }
-  header { padding: 12px 24px; border-bottom: 1px solid var(--hairline); background: var(--canvas); }
+  header { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 24px; padding: 12px 24px; border-bottom: 1px solid var(--hairline); background: var(--canvas); }
+  .meta { display: flex; gap: 24px; color: var(--mute); font-size: 12px; line-height: 16px; }
   header h1 { margin: 0; font-size: 14px; line-height: 20px; font-weight: 500; letter-spacing: -0.28px; color: var(--ink); }
-  main { display: grid; grid-template-columns: minmax(320px, 2fr) 3fr; gap: 24px; padding: 24px; min-height: calc(100vh - 90px); }
+  main { display: grid; grid-template-columns: minmax(320px, 2fr) 3fr; gap: 24px; padding: 24px; }
   @media (max-width: 768px) { main { grid-template-columns: 1fr; } }
   #left, #right { min-width: 0; }
   #dropzone { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; height: 320px; border: 1px dashed var(--faint); border-radius: var(--r-md); background: var(--elevated); cursor: pointer; text-align: center; padding: 24px; }
@@ -62,12 +63,23 @@
   .actions a[href] { display: inline-block; }
   #trace { background: var(--elevated); color: var(--ink); border: 1px solid var(--hairline); }
   #export { background: var(--ink); color: #fff; }
-  footer { padding: 12px 24px; border-top: 1px solid var(--hairline); background: var(--canvas); color: var(--mute); font-size: 12px; line-height: 16px; display: flex; align-items: center; gap: 24px; min-height: 52px; }
   #elapsed, #calls, #tokens { font-family: var(--mono); }
 </style>
 </head>
 <body>
-<header><h1>Video to Runbook</h1></header>
+<header>
+  <h1>Video to Runbook</h1>
+  <div class="meta">
+    <span id="elapsed"></span>
+    <span id="calls"></span>
+    <span id="tokens"></span>
+    <span id="tamper"></span>
+  </div>
+  <div class="actions">
+    <a id="trace" target="_blank" rel="noopener">View trace</a>
+    <a id="export" download>Export Markdown</a>
+  </div>
+</header>
 <main>
   <section id="left">
     <label id="dropzone">
@@ -82,16 +94,6 @@
     <p class="state">Drop a screen recording to begin</p>
   </section>
 </main>
-<footer>
-  <span id="elapsed"></span>
-  <span id="calls"></span>
-  <span id="tokens"></span>
-  <span id="tamper"></span>
-  <div class="actions">
-    <a id="trace" target="_blank" rel="noopener">View trace</a>
-    <a id="export" download>Export Markdown</a>
-  </div>
-</footer>
 <script>
   const MAX_BYTES = 100 * 1024 * 1024;
   const dropzone = document.getElementById("dropzone");
