@@ -5,8 +5,8 @@ from pathlib import Path
 import pytest
 from markupsafe import escape
 
-from video_to_runbook.models import CheckRecord, Runbook, RunStatus
-from video_to_runbook.render import mmss, render_fragment, render_markdown
+from video_to_runbook.models import CheckRecord, Runbook, RunStatus, Step
+from video_to_runbook.render import instruction, mmss, render_fragment, render_markdown
 
 
 def status_for(
@@ -112,21 +112,45 @@ def test_markdown_export_lists_every_step_with_its_status(
     assert sap_runbook.system in md
     for item in sap_runbook.prerequisites + sap_runbook.pitfalls:
         assert f"- {item}" in md
-    step_lines = [line for line in md.splitlines() if re.match(r"\| \d+ \|", line)]
+    step_lines = [line for line in md.splitlines() if re.match(r"\d+\. ", line)]
     assert len(step_lines) == len(sap_runbook.steps)
     for step, line in zip(sap_runbook.steps, step_lines, strict=True):
-        for text in (mmss(step.timestamp_s), step.action, step.target, step.screen, step.intent):
-            assert text in line
-        if step.value:
-            assert step.value in line
-    assert "checking" in step_lines[unchecked.order - 1]
-    assert "error" in step_lines[-1] and "timed out" in step_lines[-1]
+        assert line.startswith(f"{step.order}. **{mmss(step.timestamp_s)}** ")
+        assert f"{instruction(step)}, to {step.intent}." in line
+    assert step_lines[unchecked.order - 1].endswith("`checking`")
+    assert step_lines[-1].endswith("`error`: timed out")
     for record in checks:
         if record.badge == "flagged":
             assert record.check is not None and record.check.note is not None
-            assert record.check.note in step_lines[record.order - 1]
-            assert "flagged" in step_lines[record.order - 1]
-    assert "verified" in step_lines[1]
+            assert step_lines[record.order - 1].endswith(f"`flagged`: {record.check.note}")
+    assert step_lines[1].endswith("`verified`")
+    assert "|" not in md
+
+
+@pytest.mark.parametrize(
+    ("action", "value", "expected"),
+    [
+        ("click", None, "Click **Add** on the Sales Order screen"),
+        ("type", "06/30/2019", "Type `06/30/2019` into **Add** on the Sales Order screen"),
+        ("select", None, "Select **Add** on the Sales Order screen"),
+        ("navigate", None, "Go to **Add** on the Sales Order screen"),
+        ("wait", None, "Wait for **Add** on the Sales Order screen"),
+        ("verify", None, "Check **Add** on the Sales Order screen"),
+    ],
+)
+def test_instruction_is_one_imperative_sentence(
+    action: str, value: str | None, expected: str
+) -> None:
+    step = Step(
+        order=1,
+        timestamp_s=5.0,
+        action=action,  # type: ignore[arg-type]
+        target="Add",
+        value=value,
+        screen="Sales Order",
+        intent="save the order",
+    )
+    assert instruction(step) == expected
 
 
 def test_markdown_export_needs_a_runbook() -> None:

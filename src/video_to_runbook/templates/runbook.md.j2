@@ -12,12 +12,10 @@ None recorded.
 {%- endif %}
 
 ## Steps
-
-| # | time | action | target | value | screen | intent | status | note |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-{%- for step in runbook.steps %}
+{% for step in runbook.steps %}
 {%- set record = status.record_for(step.order) %}
-| {{ step.order }} | {{ step.timestamp_s | mmss }} | {{ step.action }} | {{ step.target | cell }} | {{ (step.value or "") | cell }} | {{ step.screen | cell }} | {{ step.intent | cell }} | {{ status.badge_for(step.order) }} | {{ (record.error if record and record.error else (record.check.note if record and record.check else "")) or "" | cell }} |
+{%- set note = record.error if record and record.error else (record.check.note if record and record.check else "") %}
+{{ step.order }}. **{{ step.timestamp_s | mmss }}** {{ step | instruction | oneline }}, to {{ step.intent | oneline }}. `{{ status.badge_for(step.order) }}`{% if note %}: {{ note | oneline }}{% endif %}
 {%- endfor %}
 
 ## Pitfalls
