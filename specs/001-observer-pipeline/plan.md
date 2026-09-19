@@ -105,6 +105,7 @@ src/video_to_runbook/
 ├── observer.py                        # ObserverDeps, observer agent, output validator, observe()
 ├── validator.py                       # validator agent, check_step(step, frames) -> StepCheck
 ├── render.py                          # render_fragment(status), render_markdown(status)
+├── tracing.py                         # setup_logfire(), trace_url(run_id); no Modal import
 ├── eval.py                            # truth parsing, evaluators, Dataset, __main__
 ├── templates/
 │   ├── runbook.html.j2
@@ -123,6 +124,7 @@ tests/
 ├── test_observer.py
 ├── test_validator.py
 ├── test_render.py
+├── test_tracing.py
 ├── test_eval.py
 └── integration/
     └── test_gemini.py                 # @pytest.mark.integration
