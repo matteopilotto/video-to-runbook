@@ -39,10 +39,13 @@ Create a gitignored `.env` in the repo root with:
 ```
 GEMINI_API_KEY=...
 LOGFIRE_TOKEN=...
+LOGFIRE_PROJECT_URL=https://logfire-eu.pydantic.dev/<org>/<project>
 ```
 
 The Gemini key must be on a billed project or hackathon credits: the Observer's Pro model is
 not on the free tier. `LOGFIRE_TOKEN` is optional; without it nothing is sent to Logfire.
+`LOGFIRE_PROJECT_URL` is the project's page in Logfire; the footer's trace link is built from
+it and is hidden when it is unset.
 
 Modal runs the app. Once per machine:
 

@@ -11,6 +11,7 @@ import logfire
 import modal
 from fastapi import FastAPI, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse
+from logfire.propagate import attach_context, get_context
 from pydantic_ai import UsageLimitExceeded
 
 from video_to_runbook import observer, runs
@@ -86,10 +87,11 @@ async def observe(run_id: str) -> None:
             runs.write_meta(run_dir, meta)
             await volume.commit.aio()
             orders = [step.order for step in steps[: len(steps) - len(capped)]]
+            trace = dict(get_context())  # each validator's span becomes a child of this one
             outcomes = [
                 outcome
                 async for outcome in validate_step.map.aio(
-                    [run_id] * len(orders), orders, return_exceptions=True
+                    [run_id] * len(orders), orders, [trace] * len(orders), return_exceptions=True
                 )
             ]
             for order, outcome in zip(orders, outcomes, strict=True):
@@ -116,17 +118,18 @@ async def observe(run_id: str) -> None:
 
 
 @app.function(timeout=180, region=GEMINI_REGION)
-async def validate_step(run_id: str, order: int) -> None:
+async def validate_step(run_id: str, order: int, trace: dict[str, str]) -> None:
     settings = get_settings()
-    await volume.reload.aio()
-    run_dir = runs.run_dir(settings.data_dir, run_id)
-    meta = runs.read_meta(run_dir)
-    step = next(s for s in runs.read_runbook(run_dir).steps if s.order == order)
-    frames = extract_frames(
-        run_dir / "video.mp4", step.timestamp_s, meta.duration_s, settings.frame_offsets_s
-    )
-    runs.write_check(run_dir, await check_step(step, frames))
-    await volume.commit.aio()
+    with attach_context(trace), logfire.span("validate_step", run_id=run_id, order=order):
+        await volume.reload.aio()
+        run_dir = runs.run_dir(settings.data_dir, run_id)
+        meta = runs.read_meta(run_dir)
+        step = next(s for s in runs.read_runbook(run_dir).steps if s.order == order)
+        frames = extract_frames(
+            run_dir / "video.mp4", step.timestamp_s, meta.duration_s, settings.frame_offsets_s
+        )
+        runs.write_check(run_dir, await check_step(step, frames))
+        await volume.commit.aio()
 
 
 @app.function()

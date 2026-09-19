@@ -160,7 +160,7 @@ parallel validator spans; the cap trips loudly; the page links to the trace.
 
 **Independent Test**: quickstart.md §6.
 
-- [ ] T038 [US6] In `src/video_to_runbook/app.py` propagate trace context: `observe` captures `ctx = dict(logfire.propagate.get_context())` inside the `runbook` span and passes it to `validate_step` as a third argument; `validate_step` wraps its body in `with logfire.propagate.attach_context(ctx), logfire.span("validate_step", run_id=run_id, order=order):`. Add `LOGFIRE_PROJECT_URL` to the `logfire` Modal Secret and the `.env` notes in `README.md` so the footer link from T021 resolves.
+- [X] T038 [US6] In `src/video_to_runbook/app.py` propagate trace context: `observe` captures `ctx = dict(logfire.propagate.get_context())` inside the `runbook` span and passes it to `validate_step` as a third argument; `validate_step` wraps its body in `with logfire.propagate.attach_context(ctx), logfire.span("validate_step", run_id=run_id, order=order):`. Add `LOGFIRE_PROJECT_URL` to the `logfire` Modal Secret and the `.env` notes in `README.md` so the footer link from T021 resolves.
 - [ ] T039 [US6] Verify quickstart.md §6 in Logfire: filter by `run_id`, see one `runbook` span with the Observer agent run (retry prompt visible when it happened), N `validate_step` children with token counts, and the `call cap reached` error event from the forced-cap run. Write the "Observability" section of `README.md` (what to filter, what a healthy run looks like, what the cap looks like).
 
 ---
