@@ -28,6 +28,9 @@ packages = ["src/video_to_runbook"]
 line-length = 100
 target-version = "py313"
 
+[tool.ruff.lint.isort]
+known-first-party = ["video_to_runbook"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = ["integration: hits Gemini; needs GEMINI_API_KEY"]
