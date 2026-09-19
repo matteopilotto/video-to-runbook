@@ -129,7 +129,7 @@ second of the step's timestamp (SC-006).
 
 ### Tests for User Story 4
 
-- [ ] T032 [P] [US4] Extend `tests/test_render.py`: `render_markdown(status)` from the fixtures contains `# <title>`, the system line, every prerequisite as a list item, a table (or numbered list) with every step's `mm:ss`, action, target, value, screen, intent, badge text, and note, and the pitfalls; a step without a record shows "checking"; a status without a runbook raises `ValueError("no runbook yet")`.
+- [X] T032 [P] [US4] Extend `tests/test_render.py`: `render_markdown(status)` from the fixtures contains `# <title>`, the system line, every prerequisite as a list item, a table (or numbered list) with every step's `mm:ss`, action, target, value, screen, intent, badge text, and note, and the pitfalls; a step without a record shows "checking"; a status without a runbook raises `ValueError("no runbook yet")`.
 
 ### Implementation for User Story 4
 
