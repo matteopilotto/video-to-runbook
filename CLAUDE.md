@@ -15,7 +15,7 @@ Status: scaffold only. No application code, tests, or CI are committed yet.
 | Topic | Read |
 |---|---|
 | The brief: pitch, scope, architecture, data models, agent prompts, Modal layout, demo plan, judge Q&A | `BRIEF.md` (gitignored, local only) |
-| Setup, running the demo, architecture, decisions, eval scores, roadmap | `README.md` (create with the first code commit) |
+| Setup, running the demo, architecture, decisions, eval scores, roadmap | `README.md` |
 | Sample recordings, their sources, ground-truth step tables, the rejected ones | `samples/README.md` |
 | Current feature's spec, plan, and tasks | `specs/<NNN>-<name>/{spec,plan,tasks}.md` |
 | Project constitution | `.specify/memory/constitution.md` (still the unfilled template; run `/speckit-constitution` before relying on it) |
