@@ -1,11 +1,12 @@
 import json
 import re
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 from markupsafe import escape
 
-from video_to_runbook.models import CheckRecord, Runbook, RunStatus, Step
+from video_to_runbook.models import CheckRecord, Runbook, RunStatus, Step, StepCheck
 from video_to_runbook.render import instruction, mmss, render_fragment, render_markdown
 
 
@@ -24,6 +25,7 @@ def status_for(
         tamper_step=None,
         tamper_applied=False,
         trace_url=None,
+        created_at=datetime(2026, 9, 19, 14, 30, tzinfo=UTC),
         elapsed_s=12.0,
         calls=1,
         input_tokens=10,
@@ -151,6 +153,22 @@ def test_instruction_is_one_imperative_sentence(
         intent="save the order",
     )
     assert instruction(step) == expected
+
+
+def test_markdown_export_opens_with_provenance_and_check_counts(sap_runbook: Runbook) -> None:
+    checks = [
+        CheckRecord(order=1, check=StepCheck(order=1, matches=True, confidence=0.9)),
+        CheckRecord(order=2, check=StepCheck(order=2, matches=False, confidence=0.8, note="n")),
+        CheckRecord(order=3, error="timed out"),
+    ]
+    md = render_markdown(status_for(sap_runbook, checks=checks))
+
+    header = (
+        "Recorded from clip.mp4 (01:58), generated 2026-09-19 by Video-to-Runbook.\n\n"
+        f"Checks: 1 verified, 1 flagged, 1 not checked, {len(sap_runbook.steps) - 3} pending."
+    )
+    assert header in md
+    assert md.index(sap_runbook.system) < md.index(header) < md.index("## Prerequisites")
 
 
 def test_markdown_export_needs_a_runbook() -> None:

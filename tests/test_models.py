@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from typing import Any
 
 import pytest
@@ -123,6 +124,7 @@ def test_run_status_round_trips() -> None:
         tamper_step=None,
         tamper_applied=False,
         trace_url=None,
+        created_at=datetime(2026, 9, 19, 14, 30, tzinfo=UTC),
         elapsed_s=12.5,
         calls=3,
         input_tokens=100,

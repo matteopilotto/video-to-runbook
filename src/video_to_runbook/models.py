@@ -158,6 +158,7 @@ class RunStatus(BaseModel):
     tamper_step: int | None
     tamper_applied: bool
     trace_url: str | None
+    created_at: datetime
     elapsed_s: float
     calls: int
     input_tokens: int

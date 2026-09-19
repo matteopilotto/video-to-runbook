@@ -54,6 +54,7 @@ def read_status(run_dir: Path) -> RunStatus:
         tamper_step=meta.tamper_step,
         tamper_applied=meta.tamper_applied,
         trace_url=meta.trace_url,
+        created_at=meta.created_at,
         elapsed_s=(end - meta.created_at).total_seconds(),
         calls=meta.observer_requests + sum(c.requests for c in checks),
         input_tokens=meta.observer_input_tokens + sum(c.input_tokens for c in checks),

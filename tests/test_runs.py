@@ -100,7 +100,8 @@ def test_runbook_round_trip(tmp_path: Path) -> None:
 
 def test_read_status_assembles_the_payload(tmp_path: Path) -> None:
     run_id = "3f9a1c2b7d4e"
-    write_meta(tmp_path, make_meta(run_id))
+    meta = make_meta(run_id)
+    write_meta(tmp_path, meta)
     (tmp_path / "runbook.json").write_text(make_runbook(3).model_dump_json())
     checks = tmp_path / "checks"
     checks.mkdir()
@@ -119,6 +120,7 @@ def test_read_status_assembles_the_payload(tmp_path: Path) -> None:
 
     assert status.state == "checking"
     assert status.run_id == run_id
+    assert status.created_at == meta.created_at
     assert status.calls == 2 + 1 + 3
     assert status.input_tokens == 1000 + 10 + 30
     assert status.output_tokens == 200 + 5

@@ -1,6 +1,14 @@
+{%- set verified = status.checks | selectattr("badge", "equalto", "verified") | list | length %}
+{%- set flagged = status.checks | selectattr("badge", "equalto", "flagged") | list | length %}
+{%- set errors = status.checks | selectattr("badge", "equalto", "error") | list | length %}
+{%- set pending = runbook.steps | length - status.checks | length -%}
 # {{ runbook.title }}
 
 System: {{ runbook.system }}
+
+Recorded from {{ status.filename }} ({{ status.duration_s | mmss }}), generated {{ status.created_at.date() }} by Video-to-Runbook.
+
+Checks: {{ verified }} verified, {{ flagged }} flagged, {{ errors }} not checked, {{ pending }} pending.
 
 ## Prerequisites
 {% if runbook.prerequisites %}
