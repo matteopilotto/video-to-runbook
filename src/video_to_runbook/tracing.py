@@ -26,4 +26,4 @@ def trace_url(run_id: str) -> str | None:
     url = get_settings().logfire_project_url
     if not url:
         return None
-    return f"{url}?q=" + quote(f"run_id = '{run_id}'")
+    return f"{url}?q=" + quote(f"attributes->>'run_id' = '{run_id}'")

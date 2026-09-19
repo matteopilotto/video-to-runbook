@@ -96,7 +96,7 @@ has fewer steps.
 
 ## 6. The trace
 
-In Logfire, filter `run_id = '<id>'`. Expected: one `runbook` span containing the Observer
+In Logfire, filter `attributes->>'run_id' = '<id>'`. Expected: one `runbook` span containing the Observer
 agent run (with any retry prompt visible as a second model request), then N `validate_step`
 spans side by side, each with its own agent run and token counts. Force the cap by setting
 `CALL_CAP=2` in the Modal Secret or `.env`: the run ends `failed`, the page shows the reason,
