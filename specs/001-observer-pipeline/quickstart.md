@@ -12,7 +12,8 @@ build. Contracts are in [contracts/](contracts/), the data model in
   per `samples/README.md`.
 - A gitignored `.env` with `GEMINI_API_KEY` and `LOGFIRE_TOKEN` (and optionally
   `LOGFIRE_PROJECT_URL` for the footer link). None is needed for the gate below.
-- A Modal token (`modal token new`, once) and two Modal Secrets created from the same values:
+- A Modal token (`modal token new`, once), `MODAL_IMAGE_BUILDER_VERSION=2025.06` exported (the
+  workspace default builder predates Python 3.13), and two Modal Secrets created from the same values:
 
   ```bash
   uv run modal secret create gemini GEMINI_API_KEY=...
@@ -79,7 +80,7 @@ a `.md` file downloads (SC-009).
 Curl checks against the same URL:
 
 ```bash
-curl -s -F file=@samples/sap_b1_create_sales_order_demo.mp4 $URL/runs           # {"run_id": ...}
+curl -s -F 'file=@samples/sap_b1_create_sales_order_demo.mp4;type=video/mp4' $URL/runs   # {"run_id": ...}
 curl -s $URL/status/$RUN_ID | jq '.state, (.checks | length)'                     # poll
 curl -s -o /dev/null -w '%{http_code}\n' -F file=@README.md $URL/runs              # 415
 curl -s -o /dev/null -w '%{http_code}\n' $URL/status/000000000000                 # 404

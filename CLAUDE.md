@@ -37,7 +37,8 @@ uv run modal deploy src/video_to_runbook/app.py
 
 The gate, integration, and `modal` lines run today; `.github/workflows/ci.yml` runs the
 two CI lines on every push. The eval command arrives in the commit that creates `eval.py`.
-`modal serve` needs the `gemini` and `logfire` Modal Secrets from the README's Setup section.
+`modal serve` and `modal deploy` need the Modal Secrets and the image-builder setting from the
+README's Setup section.
 
 ## Working rules
 

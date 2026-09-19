@@ -41,12 +41,22 @@ GEMINI_API_KEY=...
 LOGFIRE_TOKEN=...
 ```
 
-For deployed runs the same values live in two Modal Secrets:
+The Gemini key must be on a billed project or hackathon credits: the Observer's Pro model is
+not on the free tier. `LOGFIRE_TOKEN` is optional; without it nothing is sent to Logfire.
+
+Modal runs the app. Once per machine:
 
 ```bash
-uv run modal secret create gemini GEMINI_API_KEY=...
+uv run modal token new
+uv run modal secret create gemini --from-dotenv .env
 uv run modal secret create logfire LOGFIRE_TOKEN=... LOGFIRE_PROJECT_URL=...
+export MODAL_IMAGE_BUILDER_VERSION=2025.06
 ```
+
+The `logfire` Secret may be created with an empty `LOGFIRE_TOKEN=` to run without tracing.
+The builder export is needed until the workspace's default image builder is moved past
+2023.12 in the Modal dashboard (Settings, Image config); the older builders cannot build
+Python 3.13 images.
 
 The gate, no network needed:
 
@@ -54,9 +64,49 @@ The gate, no network needed:
 uv run ruff format --check . && uv run ruff check . && uv run pytest
 ```
 
+The integration tests hit Gemini and record the golden fixtures when asked:
+
+```bash
+uv run --env-file .env pytest -m integration
+RECORD_FIXTURES=1 uv run --env-file .env pytest -m integration   # rewrites tests/fixtures/sap/
+```
+
 ## Run the demo
 
-To be written with the Modal app.
+Serve the app from this machine with hot reload; the first run builds the image, about two
+minutes, later runs reuse it:
+
+```bash
+uv run modal serve src/video_to_runbook/app.py
+```
+
+Open the printed `*.modal.run` URL and drop `samples/sap_b1_create_sales_order_demo.mp4` on
+the page. The player appears as soon as the upload returns and the right column says
+"Watching the recording…"; the runbook then lands whole, every step with a timestamp and a
+grey "checking" badge. Step checks, badges flipping, and the footer's trace link arrive with
+`validate_step`.
+
+The same flow from a shell (curl sends `application/octet-stream` unless told the type; a
+browser sends `video/mp4` on its own):
+
+```bash
+URL=https://<workspace>--video-to-runbook-web-dev.modal.run
+curl -s -F 'file=@samples/sap_b1_create_sales_order_demo.mp4;type=video/mp4' $URL/runs   # 202 {"run_id": ...}
+curl -s $URL/status/<run_id> | jq '.state, .elapsed_s, .calls'                            # poll every 2 s
+curl -s $URL/runs/<run_id>/runbook.html | head                                            # the fragment
+curl -s -o /dev/null -w '%{http_code}\n' -F file=@README.md $URL/runs                     # 415
+curl -s -o /dev/null -w '%{http_code}\n' $URL/status/000000000000                        # 404
+```
+
+Measured on 19 September 2026 with the SAP sample (118 s, 4.5 MB): the upload returned in
+4 s, `observe` started after a 15 s container cold start, and the runbook was on the page
+46 s after the drop.
+
+Deploy for the stage the same way:
+
+```bash
+uv run modal deploy src/video_to_runbook/app.py
+```
 
 ## Decisions and trade-offs
 

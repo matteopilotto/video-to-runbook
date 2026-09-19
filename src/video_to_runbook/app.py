@@ -47,12 +47,12 @@ if not modal.is_local():
 
 @app.function(timeout=900)
 async def observe(run_id: str) -> None:
-    volume.reload()
+    await volume.reload.aio()
     run_dir = runs.run_dir(get_settings().data_dir, run_id)
     meta = runs.read_meta(run_dir)
     meta.state = "watching"
     runs.write_meta(run_dir, meta)
-    volume.commit()
+    await volume.commit.aio()
     with logfire.span("runbook", run_id=run_id, video=meta.filename):
         deps = ObserverDeps(
             run_id=run_id, video_path=run_dir / "video.mp4", duration_s=meta.duration_s
@@ -75,7 +75,7 @@ async def observe(run_id: str) -> None:
             meta.state = "done"  # validation fan-out arrives with validate_step
         meta.finished_at = datetime.now(UTC)
         runs.write_meta(run_dir, meta)
-        volume.commit()
+        await volume.commit.aio()
 
 
 @app.function()
@@ -121,8 +121,8 @@ def web() -> FastAPI:
             state="uploaded",
         )
         runs.write_meta(run_dir, meta)
-        volume.commit()
-        observe.spawn(run_id)
+        await volume.commit.aio()
+        await observe.spawn.aio(run_id)
         return {"run_id": run_id}
 
     @api.get("/status/{run_id}")
