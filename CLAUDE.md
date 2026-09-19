@@ -63,9 +63,9 @@ legible, tested, observable is not. In priority order, and each earned in the co
 introduces the thing it governs:
 
 1. **Pure core, thin glue.** `src/video_to_runbook/` holds `models.py`, `observer.py`,
-   `validator.py`, `frames.py`, `render.py`, `config.py`, each importable without Modal or
-   a network. `app.py` is the only file that imports `modal`; it wires the core into
-   `ingest`, `observe`, `validate_step`, `render`.
+   `validator.py`, `frames.py`, `render.py`, `config.py`, `tracing.py`, `runs.py`, and
+   `eval.py`, each importable without Modal or a network. `app.py` is the only file that
+   imports `modal`; it wires the core into `ingest`, `observe`, `validate_step`, `render`.
 2. **Typed at every boundary.** Pydantic models for anything that crosses a function,
    file, or HTTP edge; `config.py` is a `pydantic-settings` class and the single source of
    model names, limits, and paths. Type hints on every signature.
