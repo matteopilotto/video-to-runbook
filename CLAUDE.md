@@ -31,13 +31,13 @@ uv run ruff format --check . && uv run ruff check .   # CI check
 uv run pytest                                # unit tests: no network, golden fixtures only
 uv run pytest -m integration                 # hits Gemini; needs GEMINI_API_KEY, skipped otherwise
 uv run python -m video_to_runbook.eval samples/sap_b1_create_sales_order_demo.mp4   # score Observer against ground truth
-modal serve src/video_to_runbook/app.py      # local endpoints with hot reload
-modal deploy src/video_to_runbook/app.py
+uv run modal serve src/video_to_runbook/app.py   # local endpoints with hot reload
+uv run modal deploy src/video_to_runbook/app.py
 ```
 
-The three gate lines and the integration line run today; `.github/workflows/ci.yml` runs
-the two CI lines on every push. The eval and `modal` commands arrive in the commits that
-create `eval.py` and `app.py`.
+The gate, integration, and `modal` lines run today; `.github/workflows/ci.yml` runs the
+two CI lines on every push. The eval command arrives in the commit that creates `eval.py`.
+`modal serve` needs the `gemini` and `logfire` Modal Secrets from the README's Setup section.
 
 ## Working rules
 
@@ -65,7 +65,8 @@ introduces the thing it governs:
 1. **Pure core, thin glue.** `src/video_to_runbook/` holds `models.py`, `observer.py`,
    `validator.py`, `frames.py`, `render.py`, `config.py`, `tracing.py`, `runs.py`, and
    `eval.py`, each importable without Modal or a network. `app.py` is the only file that
-   imports `modal`; it wires the core into `ingest`, `observe`, `validate_step`, `render`.
+   imports `modal`; it wires the core into `web` (the `ingest`, `status`, `video`, and
+   `fragment` routes), `observe`, and `validate_step`.
 2. **Typed at every boundary.** Pydantic models for anything that crosses a function,
    file, or HTTP edge; `config.py` is a `pydantic-settings` class and the single source of
    model names, limits, and paths. Type hints on every signature.
