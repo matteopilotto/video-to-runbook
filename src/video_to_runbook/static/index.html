@@ -57,11 +57,13 @@
   .badge.error { background: var(--warning-soft); color: var(--warning-deep); }
   .badge.error::before { content: "\26A0\FE0E "; }
   .banner { padding: 8px 12px; border-radius: var(--r-sm); background: var(--elevated); border: 1px solid var(--error); color: var(--error); margin-bottom: 12px; }
-  #export { display: none; margin-left: auto; padding: 4px 10px; border-radius: var(--r-sm); background: var(--ink); color: #fff; font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none; }
-  #export[href] { display: inline-block; }
+  .actions { margin-left: auto; display: flex; gap: 8px; }
+  .actions a { display: none; padding: 4px 10px; border-radius: var(--r-sm); font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none; }
+  .actions a[href] { display: inline-block; }
+  #trace { background: var(--elevated); color: var(--ink); border: 1px solid var(--hairline); }
+  #export { background: var(--ink); color: #fff; }
   footer { padding: 12px 24px; border-top: 1px solid var(--hairline); background: var(--canvas); color: var(--mute); font-size: 12px; line-height: 16px; display: flex; align-items: center; gap: 24px; min-height: 52px; }
   #elapsed, #calls, #tokens { font-family: var(--mono); }
-  #trace a { color: var(--link); text-decoration: none; }
 </style>
 </head>
 <body>
@@ -85,8 +87,10 @@
   <span id="calls"></span>
   <span id="tokens"></span>
   <span id="tamper"></span>
-  <span id="trace"></span>
-  <a id="export" download>Export Markdown</a>
+  <div class="actions">
+    <a id="trace" target="_blank" rel="noopener">View trace</a>
+    <a id="export" download>Export Markdown</a>
+  </div>
 </footer>
 <script>
   const MAX_BYTES = 100 * 1024 * 1024;
@@ -159,9 +163,6 @@
         : "Demo tamper requested for step " + status.tamper_step + ", runbook has " +
           (status.runbook ? status.runbook.steps.length : 0) + " steps";
     }
-    if (status.trace_url) {
-      traceEl.innerHTML = '<a href="' + status.trace_url + '" target="_blank" rel="noopener">trace</a>';
-    }
   }
 
   async function poll() {
@@ -176,6 +177,7 @@
     const status = await response.json();
     callsEl.textContent = "calls " + status.calls;
     tokensEl.textContent = "tokens " + (status.input_tokens + status.output_tokens);
+    if (status.trace_url && !traceEl.hasAttribute("href")) traceEl.href = status.trace_url;
     if (status.runbook && !exportEl.hasAttribute("href")) exportEl.href = "/runs/" + runId + "/runbook.md";
     const fragment = await fetch("/runs/" + runId + "/runbook.html");
     if (fragment.ok) {

@@ -86,8 +86,9 @@ uv run modal serve src/video_to_runbook/app.py
 Open the printed `*.modal.run` URL and drop `samples/sap_b1_create_sales_order_demo.mp4` on
 the page. The player appears as soon as the upload returns and the right column says
 "Watching the recording…"; the runbook then lands whole, every step with a timestamp and a
-grey "checking" badge. Step checks, badges flipping, and the footer's trace link arrive with
-`validate_step`.
+grey "checking" badge. The footer's "View trace" button is live from the first status poll,
+so the Observer can be watched in Logfire while it works; step checks and badges flipping
+arrive with `validate_step`.
 The runbook always has the same sections: title, system, Prerequisites, the step grid,
 Outcome, Pitfalls. "Export Markdown" downloads the same runbook as a numbered list of
 imperative instructions ("Type `06/30/2019` into **Delivery Date** on the Sales Order

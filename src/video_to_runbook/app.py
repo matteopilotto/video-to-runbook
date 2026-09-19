@@ -60,7 +60,6 @@ async def observe(run_id: str) -> None:
     run_dir = runs.run_dir(settings.data_dir, run_id)
     meta = runs.read_meta(run_dir)
     meta.state = "watching"
-    meta.trace_url = trace_url(run_id)
     runs.write_meta(run_dir, meta)
     await volume.commit.aio()
     with logfire.span("runbook", run_id=run_id, video=meta.filename):
@@ -172,6 +171,7 @@ def web() -> FastAPI:
             duration_s=probe_duration(video),
             created_at=datetime.now(UTC),
             tamper_step=tamper_step,
+            trace_url=trace_url(run_id),
             state="uploaded",
         )
         runs.write_meta(run_dir, meta)
