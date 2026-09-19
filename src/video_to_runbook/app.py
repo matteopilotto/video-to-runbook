@@ -1,5 +1,6 @@
 """The Modal app: the only module that imports modal. Files and fan-out live here."""
 
+import re
 import secrets
 import shutil
 from datetime import UTC, datetime
@@ -9,7 +10,7 @@ from pathlib import Path
 import logfire
 import modal
 from fastapi import FastAPI, Form, HTTPException, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse
 from pydantic_ai import UsageLimitExceeded
 
 from video_to_runbook import observer, runs
@@ -17,7 +18,7 @@ from video_to_runbook.config import get_settings
 from video_to_runbook.frames import extract_frames, probe_duration
 from video_to_runbook.models import CheckRecord, RunMeta, RunStatus
 from video_to_runbook.observer import ObserverDeps
-from video_to_runbook.render import render_fragment
+from video_to_runbook.render import render_fragment, render_markdown
 from video_to_runbook.tracing import setup_logfire, trace_url
 from video_to_runbook.validator import check_step
 
@@ -189,5 +190,17 @@ def web() -> FastAPI:
     @api.get("/runs/{run_id}/runbook.html", response_class=HTMLResponse)
     def fragment(run_id: str) -> str:
         return render_fragment(runs.read_status(run_dir_or_404(run_id)))
+
+    @api.get("/runs/{run_id}/runbook.md")
+    def export(run_id: str) -> PlainTextResponse:
+        status = runs.read_status(run_dir_or_404(run_id))
+        if status.runbook is None:
+            raise HTTPException(status_code=409, detail="no runbook yet")
+        slug = re.sub(r"[^a-z0-9]+", "-", status.runbook.title.lower()).strip("-") or "runbook"
+        return PlainTextResponse(
+            render_markdown(status),
+            media_type="text/markdown",
+            headers={"Content-Disposition": f'attachment; filename="{slug}.md"'},
+        )
 
     return api

@@ -40,6 +40,8 @@
   .badge.error { background: var(--amber); }
   .badge.error::before { content: "\26A0\FE0E "; }
   .banner { padding: 10px 12px; border-radius: 8px; background: #fdecec; color: var(--red); margin-bottom: 12px; }
+  #export { display: none; margin-left: auto; color: var(--green); font-weight: 600; text-decoration: none; }
+  #export[href] { display: inline; }
   footer { padding: 10px 20px; border-top: 1px solid var(--line); background: #fff; color: var(--grey); font-size: 13px; display: flex; gap: 20px; min-height: 40px; }
 </style>
 </head>
@@ -65,6 +67,7 @@
   <span id="tokens"></span>
   <span id="tamper"></span>
   <span id="trace"></span>
+  <a id="export" download>Export Markdown</a>
 </footer>
 <script>
   const MAX_BYTES = 100 * 1024 * 1024;
@@ -78,6 +81,7 @@
   const tokensEl = document.getElementById("tokens");
   const tamperEl = document.getElementById("tamper");
   const traceEl = document.getElementById("trace");
+  const exportEl = document.getElementById("export");
   const tamperStep = new URLSearchParams(location.search).get("tamper");
 
   let runId = null;
@@ -153,6 +157,7 @@
     const status = await response.json();
     callsEl.textContent = "calls " + status.calls;
     tokensEl.textContent = "tokens " + (status.input_tokens + status.output_tokens);
+    if (status.runbook && !exportEl.hasAttribute("href")) exportEl.href = "/runs/" + runId + "/runbook.md";
     const fragment = await fetch("/runs/" + runId + "/runbook.html");
     if (fragment.ok) {
       let html = await fragment.text();
