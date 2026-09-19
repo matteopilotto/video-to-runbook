@@ -101,8 +101,11 @@ more surface); hand-rolled retry loop (a regression per Constitution II).
 **Decision**: Budget by construction, per run:
 
 1. The Observer run gets `UsageLimits(request_limit=settings.observer_request_limit)` (4).
-2. After the runbook is written, `slots = (settings.call_cap - observer_requests) // settings.check_request_limit` where `check_request_limit` is 3. Steps `[:slots]` are dispatched with `validate_step.map(...)`, each run under `UsageLimits(request_limit=3)`. Steps beyond the slots get a `CheckRecord(error="call cap reached before this step")` without a call.
+2. After the runbook is written, `slots = runs.budget_slots(settings.call_cap, observer_requests, settings.check_request_limit)` where `check_request_limit` is 3. Steps `[:slots]` are dispatched with `validate_step.map(...)`, each run under `UsageLimits(request_limit=3)`. Steps beyond the slots get a `CheckRecord(error="call cap reached before this step")` without a call, and when any step was capped the run ends `failed` with the cap as its reason (FR-024) while the runbook and every finished check stay visible.
 3. `UsageLimitExceeded` in either phase is caught, logged with `logfire.error("call cap reached", run_id=...)`, and turns into `failed` (Observer) or an `error` record (Validator).
+
+The arithmetic and the record construction live in `runs.py` (pure, unit-tested); `app.py`
+only calls them.
 
 **Rationale**: Validators run in separate containers, so a live shared counter would need a
 `modal.Dict` and would couple checks (the constitution forbids shared mutable state between
@@ -139,12 +142,15 @@ one Volume `video-to-runbook-data` at `/data`, two Secrets `gemini` (`GEMINI_API
 
 `render` is a core module used by `web`, not a Modal function; the README and `CLAUDE.md`
 line that lists `render` among the wired functions gets updated in the commit that creates
-`app.py`.
+`app.py`. Run-state helpers (`runs.py`: directory layout, meta and status I/O, tamper, cap
+slots) are core too, so `app.py` stays glue.
 
 **Rationale** (verified in Modal 1.5.5 source): `@modal.web_endpoint` is a hard deprecation
 error; `@modal.asgi_app` mounts a full FastAPI app, which the page shell, upload, and video
 routes need. `fastapi[standard]` brings `python-multipart` for `UploadFile`. `.map` from
-inside another function works. `add_local_python_source` ignores non-Python files by default,
+inside another function works; it receives `(run_id, order)` pairs rather than `Step`
+objects because each validator reloads the runbook from the Volume, which is the same
+fan-out the constitution names as `validate_step.map(steps)`. `add_local_python_source` ignores non-Python files by default,
 so `add_local_dir` is used to ship the Jinja templates and `index.html`. `.uv_sync()` is
 avoided because it installs into a separate environment whose interplay with the Modal
 client is not documented; an explicit pin list mirrors `pyproject.toml`. `modal serve`

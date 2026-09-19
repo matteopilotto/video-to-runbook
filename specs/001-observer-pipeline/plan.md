@@ -56,7 +56,7 @@ not interfere.
 
 | Principle / invariant | How this plan satisfies it | Status |
 | --- | --- | --- |
-| I. Pure core, thin glue | `models.py`, `observer.py`, `validator.py`, `frames.py`, `render.py`, `config.py`, `eval.py` import without Modal; `app.py` is the only module importing `modal` and holds three functions that delegate to the core. | Pass |
+| I. Pure core, thin glue | `models.py`, `observer.py`, `validator.py`, `frames.py`, `render.py`, `config.py`, `tracing.py`, `runs.py`, `eval.py` import without Modal; `app.py` is the only module importing `modal`, holds three functions that delegate to the core, and keeps no run-state logic of its own (tamper, cap slots, status assembly live in `runs.py` with their own tests). | Pass |
 | II. Typed at every boundary | Every file and HTTP payload is a model in data-model.md; `config.py` is one `BaseSettings`; agents declare `output_type=Runbook` / `StepCheck`; validators encode duration, contiguity, monotonic timestamps, non-generic targets. No hand-parsed JSON. | Pass |
 | III. Tests that run in a second | One test module per core module on `tests/fixtures/sap/`; `FunctionModel` for agent behaviour; synthetic 3 s clip for ffmpeg; integration tests marked and skipped without the key. | Pass |
 | IV. An eval, not a vibe check | `eval.py` scores both cases per FR-027a/b, subtracts the 10 s / 14.6 s offsets, prints, and README records the numbers. | Pass |
@@ -106,6 +106,7 @@ src/video_to_runbook/
 ├── validator.py                       # validator agent, check_step(step, frames) -> StepCheck
 ├── render.py                          # render_fragment(status), render_markdown(status)
 ├── tracing.py                         # setup_logfire(), trace_url(run_id); no Modal import
+├── runs.py                            # run dir I/O, read_status(), apply_tamper(), budget_slots(), capped_records()
 ├── eval.py                            # truth parsing, evaluators, Dataset, __main__
 ├── templates/
 │   ├── runbook.html.j2
@@ -125,6 +126,7 @@ tests/
 ├── test_validator.py
 ├── test_render.py
 ├── test_tracing.py
+├── test_runs.py
 ├── test_eval.py
 └── integration/
     └── test_gemini.py                 # @pytest.mark.integration

@@ -127,7 +127,7 @@ A maintainer or judge filters the trace viewer by a run reference and sees the w
 - A step's moment is given as MM:SS rather than seconds: it is accepted and converted. A moment past the video's end is rejected as a rule violation.
 - Two steps share the same moment or a later step has an earlier moment: rejected as a rule violation.
 - A check cannot complete (timeout, unusable answer after retries): the step shows "error", never "flagged", and never disappears.
-- The call budget trips while checks are still running: steps without a result show "error", the run is marked over budget, and the trace records it.
+- The call budget trips while checks are still running: steps without a result show "error", the run is marked failed with the cap as the reason (FR-024) while the runbook and every finished check stay visible, and the trace records it.
 - Two recordings are dropped from two browser tabs at once: each gets its own run and neither affects the other.
 - The page is reloaded mid-run: the page returns to the empty state; the run keeps going on the server but the page does not resume it (past runs are out of scope).
 - The status of an unknown run reference is requested: the page shows a not-found message rather than spinning forever.

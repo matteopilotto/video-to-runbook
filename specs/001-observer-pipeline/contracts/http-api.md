@@ -8,7 +8,7 @@ one-day build).
 | --- | --- | --- | --- | --- |
 | `GET` | `/` | | `200 text/html`: the static page shell | |
 | `POST` | `/runs` | `multipart/form-data`: `file` (the recording), optional `tamper_step` (int) | `202 application/json`: `{"run_id": "<12 hex>"}` | `415` if content type is not `video/*`; `413` if larger than 100 MB; `422` if `tamper_step` is not a positive int |
-| `GET` | `/runs/{run_id}` | | `200 application/json`: `RunStatus` | `404 {"detail": "unknown run"}` |
+| `GET` | `/status/{run_id}` | | `200 application/json`: `RunStatus` | `404 {"detail": "unknown run"}` |
 | `GET` | `/runs/{run_id}/video` | optional `Range` | `200`/`206 video/mp4` | `404` |
 | `GET` | `/runs/{run_id}/runbook.html` | | `200 text/html`: the runbook fragment (step rows with badges), or the state message when no runbook yet | `404` |
 | `GET` | `/runs/{run_id}/runbook.md` | | `200 text/markdown` with `Content-Disposition: attachment; filename="<title-slug>.md"` | `404`; `409 {"detail": "no runbook yet"}` if the runbook does not exist |
@@ -18,8 +18,9 @@ one-day build).
 - `POST /runs` returns as soon as the file is stored and `observe` has been spawned. It never
   waits for the Observer (Constitution invariant). It probes the duration with `ffprobe`
   before returning so `RunStatus.duration_s` is available on the first poll.
-- `GET /runs/{run_id}` is safe to poll every 2 s; it reads the Volume and assembles the
-  payload each time. `checks` grows as validators finish. `state` transitions are listed in
+- `GET /status/{run_id}` is safe to poll every 2 s; it reads the Volume and assembles the
+  payload each time. The path matches the constitution's invariant ("the client polls
+  `status/{run_id}`"). `checks` grows as validators finish. `state` transitions are listed in
   the data model.
 - `GET /runs/{run_id}/runbook.html` is the Renderer's HTML output for the current status: the
   page swaps it into the right-hand column on every poll. It contains no scripts; click

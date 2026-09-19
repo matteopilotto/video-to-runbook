@@ -17,7 +17,7 @@ else (FR-022).
 | 6 | done | `state == "done"` | player | all badges terminal | elapsed frozen, tokens, trace link, tamper notice if requested |
 | F | failed | `state == "failed"` | player | red banner with `error`, plus whatever rows exist | as done |
 
-Polling: `GET /runs/{id}` every 2 s from state 3 until `done` or `failed`. On each poll the
+Polling: `GET /status/{id}` every 2 s from state 3 until `done` or `failed`. On each poll the
 page also fetches `runbook.html` and replaces the right column's inner HTML. `404` on the
 status poll shows "Run not found" and stops polling.
 

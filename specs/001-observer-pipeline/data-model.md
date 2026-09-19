@@ -5,6 +5,9 @@ the only things that cross a function, file, or HTTP edge (Constitution II). Val
 encode domain truth, not just shape; anything that needs the video's duration is checked in
 the observer agent's output validator because the model alone does not know the duration.
 
+Vocabulary: the spec's "moment" is `timestamp_s`, its "run reference" is `run_id`, its
+"watching system" is the Observer agent, and its "check" is the Validator agent.
+
 ## Step
 
 One action inside a runbook. Returned by the Observer as part of `Runbook`.
@@ -14,7 +17,7 @@ One action inside a runbook. Returned by the Observer as part of `Runbook`.
 | `order` | `int` | ≥ 1. Contiguity is checked on `Runbook`. |
 | `timestamp_s` | `float` | ≥ 0. Accepts `"MM:SS"`, `"M:SS"`, `"H:MM:SS"`, or a number (before-validator converts to seconds). Upper bound checked against video duration in the Observer output validator. |
 | `action` | `Literal["click","type","select","navigate","wait","verify"]` | Exactly this set (FR-006). |
-| `target` | `str` | Stripped, ≥ 3 characters, and not in the generic deny-list (`button`, `the button`, `field`, `the field`, `screen`, `the screen`, `it`, `here`, `there`, `element`, `the element`, `link`, `the link`). Case-insensitive. (FR-008) |
+| `target` | `str` | Stripped, ≥ 3 characters. The generic deny-list is checked by the `Runbook` validator `targets_concrete` (below) so the message can name the step's `order` rather than a list index (FR-008, FR-009). |
 | `value` | `str \| None` | Default `None`. |
 | `screen` | `str` | Non-empty after strip. |
 | `intent` | `str` | Non-empty after strip. |
@@ -35,6 +38,7 @@ Model validators (raise `ValueError`, which Pydantic AI turns into a retry with 
 
 - `orders_contiguous`: `[s.order for s in steps] == [1, 2, ..., len(steps)]`. Message names the first step that breaks the sequence.
 - `timestamps_increasing`: `steps[i].timestamp_s < steps[i+1].timestamp_s` for all `i`. Message names the offending step and both timestamps.
+- `targets_concrete`: no step's lower-cased stripped `target` is in `{button, the button, field, the field, screen, the screen, it, here, there, element, the element, link, the link}`. Message: `"step {order} target '{target}' is too generic; name the on-screen label"`.
 
 Observer output validator (`observer.py`, has `RunContext[ObserverDeps]`, raises `ModelRetry`):
 
@@ -107,7 +111,8 @@ writes to it after that (never the validators).
 
 ## RunStatus
 
-The `GET /runs/{run_id}` payload, assembled from the Volume on each poll (never stored).
+The `GET /status/{run_id}` payload, assembled from the Volume on each poll by
+`runs.read_status()` (never stored).
 
 | Field | Type | Source |
 | --- | --- | --- |
@@ -115,7 +120,7 @@ The `GET /runs/{run_id}` payload, assembled from the Volume on each poll (never 
 | `runbook` | `Runbook \| None` | `runbook.json` if present |
 | `checks` | `list[CheckRecord]` | every `checks/{order}.json` present, sorted by `order` |
 | `elapsed_s` | `float` | `(finished_at or now) - created_at` |
-| `calls` | `int` | `observer_requests + sum(check.requests)` |
+| `calls` | `int` | `observer_requests + sum(check.requests)`. Counts the requests Pydantic AI made, which is what the cap counts; transport-level retries on 429/5xx are not counted. |
 | `input_tokens` / `output_tokens` | `int` | Observer plus checks |
 | `video_url` | `str` | `/runs/{run_id}/video` |
 
@@ -135,7 +140,7 @@ produced step with `|produced.timestamp_s - (truth.timestamp_s - offset_s)| ≤ 
 
 ## Run lifecycle
 
-```
+```text
 uploaded ──observe starts──▶ watching ──runbook.json written──▶ checking ──all checks/*.json present──▶ done
     │                            │                                   │
     └── ingest failed ───────────┴── observer exhausted retries ─────┴── cap tripped ──▶ failed (error set)
@@ -149,7 +154,7 @@ uploaded ──observe starts──▶ watching ──runbook.json written──
 
 ## Volume layout
 
-```
+```text
 /data/runs/{run_id}/
 ├── video.mp4
 ├── meta.json          # RunMeta
