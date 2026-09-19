@@ -214,6 +214,20 @@ Total Gemini spend for the plan: two live runs, about 36 calls, about $0.30.
 - `uv run python -m video_to_runbook.eval --from tests/fixtures/sap` scores the re-recorded
   fixture without network.
 
+## Observed after deploy
+
+Deployed on 2026-09-19 and run on the AI Studio clip from the browser: 6 steps, all
+verified, 7 calls, 65 s. The page showed an imperative title, two true prerequisites
+("Google AI Studio is open", "A Google Cloud project already exists"), concrete targets,
+short intents, an outcome, and the narrator's key-safety warning as a step 5 pitfall.
+Against the ground truth: five of seven steps matched; the keys-list check at 0:45 was
+missing; the opening navigation to aistudio.google.com was absorbed into the first
+prerequisite by the "screen open at 00:00" rule, even though the clip shows the
+navigation. If that step should survive, soften the rule to "unless the recording shows
+how to reach it". The live SAP eval after T5 missed the timestamp target (0.64 against
+0.70) while step count and action match improved; two Gemini runs on the same clip gave
+14 and 19 steps, so single-run scores carry real variance.
+
 ## Open decisions
 
 1. **Branch.** `001-observer-pipeline` is 55 commits ahead of `main` and unmerged. Two

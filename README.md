@@ -88,6 +88,11 @@ the page. The player appears as soon as the upload returns and the right column 
 "Watching the recording…"; the runbook then lands whole, every step with a timestamp and a
 grey "checking" badge. Step checks, badges flipping, and the footer's trace link arrive with
 `validate_step`.
+The runbook always has the same sections: title, system, Prerequisites, the step grid,
+Outcome, Pitfalls. "Export Markdown" downloads the same runbook as a numbered list of
+imperative instructions ("Type `06/30/2019` into **Delivery Date** on the Sales Order
+screen, to set the delivery date"), each with its time and check status, under a header
+naming the recording, the generation date, and how many steps were verified.
 
 The same flow from a shell (curl sends `application/octet-stream` unless told the type; a
 browser sends `video/mp4` on its own):
@@ -132,6 +137,7 @@ Tamper runs (SC-005, each one a fresh upload, SAP unless noted; the tampered ste
 | 2026-09-19 | none | 17 steps, 4 flagged (steps 1 to 3 and 14) with notes, 18 calls, 115 s; deployed app, first run with validator spans joined to the trace |
 | 2026-09-19 | step 3, AI Studio clip | flagged, note "selects the 'Generative Language Client' project from the list, not a log out menu item"; 7 steps, 8 calls, 67 s; export downloads with statuses and the note; deployed app |
 | 2026-09-19 | step 3, AI Studio clip | flagged, note "selecting a Google Cloud project ('Generative Language Client') rather than a 'Log Out' menu item"; 6 steps, 7 calls, 43 s with the warm container; browser run, row click seeks the player, footer shows tamper notice and trace link |
+| 2026-09-19 | none, AI Studio clip | 6 steps, all verified, 7 calls, 45k tokens, 65 s; deployed app after the runbook-shape rules: imperative title, two prerequisites, an outcome, the narrator's key-safety warning as a step 5 pitfall; the ground truth's keys-list check at 0:45 is missing and its opening navigation became the prerequisite "Google AI Studio is open" |
 
 The cap path was seen on the page when a 20-step runbook tripped the old 60-call budget
 (red banner, amber error badges, state `failed`). The forced-cap rehearsal with `CALL_CAP=2`
@@ -200,7 +206,7 @@ same action, and share of produced steps the Validator verified. Last run:
 | case | steps | truth | Δ | ts≤3s | action | check | date |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | sap_b1_create_sales_order_demo | 14 | 14 | 0 | 0.64 | 0.78 | 1.00 | 2026-09-19 |
-| google_ai_studio_api_key_screen_only | 7 | 7 | 0 | 0.71 | 0.40 | 0.71 | 2026-09-19 |
+| google_ai_studio_api_key_screen_only | 5 | 7 | -2 | 0.57 | 0.50 | 0.80 | 2026-09-19 |
 
 The opening targets are |Δ| ≤ 4, ts≤3s ≥ 0.70, action ≥ 0.70. SAP history, one run each:
 the first run scored 17 steps, 0.71, 0.50, 1.00, with nearly every moment a `click`; a rule
@@ -211,10 +217,14 @@ prerequisites, one step per operator action with focus clicks folded into the `t
 now matches the ground truth and action match rose, but timestamp agreement fell below
 the target: folding a focus click into the entry that follows puts the step's timestamp at
 the typing or selecting moment, a few seconds after the click the ground truth records,
-and the previous two runs already differed by 0.08 between themselves. The AI Studio row
-predates the shape rules; its actions are mostly `verify` in the ground truth, which the
-Observer still under-uses. A full eval run on both clips costs about $0.30 in Gemini credits
-and 26 calls; `--from tests/fixtures/sap` scores the saved fixtures for free.
+and the previous two runs already differed by 0.08 between themselves. The AI Studio row is
+the run after the same rules; before them it scored 7 steps, 0, 0.71, 0.40, 0.71. Action
+match rose and timestamp agreement fell there too, and the two missing steps are the
+ground truth's opening navigation, which the prerequisites rule absorbs into "AI Studio is
+open", and the keys-list check at 0:45. Its actions are mostly `verify` in the ground
+truth, which the Observer still under-uses. A full eval run on both clips costs about
+$0.30 in Gemini credits and 20 to 30 calls; `--from tests/fixtures/sap` scores the saved
+fixtures for free.
 
 ## Observability
 
