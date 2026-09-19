@@ -148,8 +148,29 @@ Automatic deletion is roadmap.
 
 ## Decisions and trade-offs
 
-To be written as each decision lands.
-
+- **Inline video, not the Files API.** The recording goes to Gemini as inline bytes in the
+  request. Both samples are about 5 MB; Google's documented inline ceiling is 20 MB per
+  request, below the page's 100 MB cap. An upload between the two that Gemini rejects ends
+  as a failed run showing the provider's message; the Files API (upload, poll until active,
+  reference) is the follow-up if that happens.
+- **Static video processing at 1 fps, high media resolution.** Static mode stamps every
+  second, which matches the eval's 3 s tolerance, and high resolution keeps 720p labels
+  legible at about 300 tokens per second of video (about 35k tokens for the SAP clip).
+  Agentic video mode is Flash-only, opt-in, and aimed at long videos, so the Observer's Pro
+  tier cannot use it.
+- **Gemini 3.1 Pro preview for the Observer, 3.8 Flash for the Validator.** No Pro model is
+  GA; the preview is the only Pro-class model with video input and structured output.
+  `gemini-2.5-pro` is the one-line fallback (`OBSERVER_MODEL`) if the preview misbehaves.
+  Swapping either tier changes cost and latency, so it is a written decision, not a default.
+- **Schema, not parsing.** Both agents declare an `output_type`; contiguous orders,
+  increasing timestamps, non-generic targets, and the duration ceiling are validators whose
+  messages become the retry prompt. The live eval showed one such retry on the SAP clip.
+- **Volume commit and reload.** Modal Volumes are not a network filesystem: writers commit
+  after writing, readers reload before reading. Each validator writes only its own
+  `checks/{order}.json`, so parallel checks never contend and the run has no shared state.
+- **The video is served from a local copy.** `GET /runs/{id}/video` copies the file to `/tmp`
+  once and serves it from there with Range support; streaming from the Volume would hold a
+  file open and break `reload()` during status polls.
 - **Budgeted call cap, not a shared counter.** Each run may make at most 100 model calls
   (`CALL_CAP`). The Observer gets 4 requests; after it returns, the remaining budget is
   divided by 3 (the per-check request limit) into check slots, and steps beyond the slots
@@ -183,4 +204,13 @@ To be written with the trace propagation.
 
 ## Roadmap
 
-To be written.
+- Executors that replay a verified runbook: Playwright for web apps, an n8n workflow for
+  API-shaped steps, a computer-use agent for thick clients such as SAP Business One.
+- Pydantic AI Gateway for one key, spend limits, and provider fallbacks.
+- Files API path for uploads above 20 MB.
+- An agentic-mode Flash Observer experiment if timestamp drift on static Pro exceeds 3 s;
+  that changes a model tier, so it needs a written decision first.
+- An Observer frame tool (the agent asks for a frame at a timestamp before committing to a
+  step), packaged as a Pydantic AI `Capability`.
+- Retention policy: automatic deletion of runs after a set time.
+- Auth and multi-user: today one operator, no identity, no run history.
