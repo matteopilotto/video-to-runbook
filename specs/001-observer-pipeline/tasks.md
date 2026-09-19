@@ -31,7 +31,7 @@ per plan.md.
 
 - [X] T001 Add dependencies and tool config to `pyproject.toml`: runtime `jinja2`, `fastapi[standard]`, `pydantic-settings`, `modal` (pins per research R14, keep `pydantic-ai>=2.46.0` and `logfire>=5.1.0`); dev group `pytest`, `ruff`; a `hatchling` build backend with `packages = ["src/video_to_runbook"]` so the src layout imports under `uv run`; `[tool.ruff]` with `line-length = 100` and `target-version = "py313"`; `[tool.pytest.ini_options]` with `testpaths = ["tests"]` and `markers = ["integration: hits Gemini; needs GEMINI_API_KEY"]`. Run `uv sync` and commit `uv.lock`.
 - [X] T002 [P] Create `.github/workflows/ci.yml`: ubuntu-latest, `apt-get install -y ffmpeg`, `astral-sh/setup-uv`, `uv sync`, then exactly `uv run ruff format --check . && uv run ruff check .` and `uv run pytest`.
-- [ ] T003 [P] Create `src/video_to_runbook/__init__.py` (empty), `tests/__init__.py` (empty), and `tests/conftest.py` with a session fixture `fixtures_dir` pointing at `tests/fixtures/sap/` and an autouse hook that skips any test marked `integration` when `GEMINI_API_KEY` is unset.
+- [X] T003 [P] Create `src/video_to_runbook/__init__.py` (empty), `tests/__init__.py` (empty), and `tests/conftest.py` with a session fixture `fixtures_dir` pointing at `tests/fixtures/sap/` and an autouse hook that skips any test marked `integration` when `GEMINI_API_KEY` is unset.
 - [ ] T004 [P] Create `README.md` skeleton with the section headings the constitution requires: Architecture (ASCII diagram from BRIEF.md), Setup, Run the demo, Decisions and trade-offs, Eval scores (empty table), Observability, Roadmap. Fill Setup with the `.env` keys (`GEMINI_API_KEY`, `LOGFIRE_TOKEN`) and the two `modal secret create` lines from quickstart.md.
 
 ---
