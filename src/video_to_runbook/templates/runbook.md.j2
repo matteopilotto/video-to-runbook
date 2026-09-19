@@ -1,0 +1,26 @@
+# {{ runbook.title }}
+
+System: {{ runbook.system }}
+{%- if runbook.prerequisites %}
+
+## Prerequisites
+{% for item in runbook.prerequisites %}
+- {{ item }}
+{%- endfor %}
+{%- endif %}
+
+## Steps
+
+| # | time | action | target | value | screen | intent | status | note |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+{%- for step in runbook.steps %}
+{%- set record = status.record_for(step.order) %}
+| {{ step.order }} | {{ step.timestamp_s | mmss }} | {{ step.action }} | {{ step.target | cell }} | {{ (step.value or "") | cell }} | {{ step.screen | cell }} | {{ step.intent | cell }} | {{ status.badge_for(step.order) }} | {{ (record.error if record and record.error else (record.check.note if record and record.check else "")) or "" | cell }} |
+{%- endfor %}
+{%- if runbook.pitfalls %}
+
+## Pitfalls
+{% for item in runbook.pitfalls %}
+- {{ item }}
+{%- endfor %}
+{%- endif %}

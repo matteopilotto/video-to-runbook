@@ -1,0 +1,210 @@
+[
+  {
+    "order": 1,
+    "check": {
+      "order": 1,
+      "matches": true,
+      "confidence": 1.0,
+      "note": null
+    },
+    "error": null,
+    "requests": 1,
+    "input_tokens": 3474,
+    "output_tokens": 211
+  },
+  {
+    "order": 2,
+    "check": {
+      "order": 2,
+      "matches": true,
+      "confidence": 0.95,
+      "note": null
+    },
+    "error": null,
+    "requests": 1,
+    "input_tokens": 3473,
+    "output_tokens": 411
+  },
+  {
+    "order": 3,
+    "check": {
+      "order": 3,
+      "matches": false,
+      "confidence": 0.9,
+      "note": "opening the 'List of Business Partners' window"
+    },
+    "error": null,
+    "requests": 1,
+    "input_tokens": 3478,
+    "output_tokens": 2830
+  },
+  {
+    "order": 4,
+    "check": {
+      "order": 4,
+      "matches": true,
+      "confidence": 0.95,
+      "note": null
+    },
+    "error": null,
+    "requests": 1,
+    "input_tokens": 3473,
+    "output_tokens": 389
+  },
+  {
+    "order": 5,
+    "check": {
+      "order": 5,
+      "matches": true,
+      "confidence": 1.0,
+      "note": null
+    },
+    "error": null,
+    "requests": 1,
+    "input_tokens": 3471,
+    "output_tokens": 121
+  },
+  {
+    "order": 6,
+    "check": {
+      "order": 6,
+      "matches": false,
+      "confidence": 0.9,
+      "note": "The cursor is interacting with the address field and only reaches the 'Accounting' tab in the final frame, where the tab has not yet been clicked."
+    },
+    "error": null,
+    "requests": 1,
+    "input_tokens": 3470,
+    "output_tokens": 4964
+  },
+  {
+    "order": 7,
+    "check": {
+      "order": 7,
+      "matches": true,
+      "confidence": 0.95,
+      "note": null
+    },
+    "error": null,
+    "requests": 1,
+    "input_tokens": 3473,
+    "output_tokens": 336
+  },
+  {
+    "order": 8,
+    "check": {
+      "order": 8,
+      "matches": true,
+      "confidence": 0.95,
+      "note": null
+    },
+    "error": null,
+    "requests": 1,
+    "input_tokens": 3471,
+    "output_tokens": 237
+  },
+  {
+    "order": 9,
+    "check": {
+      "order": 9,
+      "matches": true,
+      "confidence": 1.0,
+      "note": null
+    },
+    "error": null,
+    "requests": 1,
+    "input_tokens": 3478,
+    "output_tokens": 209
+  },
+  {
+    "order": 10,
+    "check": {
+      "order": 10,
+      "matches": true,
+      "confidence": 0.95,
+      "note": null
+    },
+    "error": null,
+    "requests": 1,
+    "input_tokens": 3479,
+    "output_tokens": 891
+  },
+  {
+    "order": 11,
+    "check": {
+      "order": 11,
+      "matches": true,
+      "confidence": 1.0,
+      "note": null
+    },
+    "error": null,
+    "requests": 1,
+    "input_tokens": 3473,
+    "output_tokens": 187
+  },
+  {
+    "order": 12,
+    "check": {
+      "order": 12,
+      "matches": true,
+      "confidence": 1.0,
+      "note": null
+    },
+    "error": null,
+    "requests": 1,
+    "input_tokens": 3475,
+    "output_tokens": 180
+  },
+  {
+    "order": 13,
+    "check": {
+      "order": 13,
+      "matches": true,
+      "confidence": 1.0,
+      "note": null
+    },
+    "error": null,
+    "requests": 1,
+    "input_tokens": 3489,
+    "output_tokens": 314
+  },
+  {
+    "order": 14,
+    "check": {
+      "order": 14,
+      "matches": true,
+      "confidence": 1.0,
+      "note": null
+    },
+    "error": null,
+    "requests": 1,
+    "input_tokens": 3473,
+    "output_tokens": 217
+  },
+  {
+    "order": 15,
+    "check": {
+      "order": 15,
+      "matches": true,
+      "confidence": 0.95,
+      "note": null
+    },
+    "error": null,
+    "requests": 1,
+    "input_tokens": 3474,
+    "output_tokens": 306
+  },
+  {
+    "order": 16,
+    "check": {
+      "order": 16,
+      "matches": true,
+      "confidence": 1.0,
+      "note": null
+    },
+    "error": null,
+    "requests": 1,
+    "input_tokens": 3475,
+    "output_tokens": 317
+  }
+]

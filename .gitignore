@@ -1,1 +1,12 @@
-video-to-runbook_1.md
+BRIEF.md
+.venv/
+__pycache__/
+.env
+.logfire/
+.DS_Store
+samples/raw/
+samples/sheets/
+samples/*.mp4
+.pytest_cache/
+.ruff_cache/
+*.egg-info/

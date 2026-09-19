@@ -1,0 +1,58 @@
+{%- macro cells(step, badge) -%}
+<span class="order">{{ step.order }}</span>
+<span class="time">{{ step.timestamp_s | mmss }}</span>
+<span class="action">{{ step.action }}</span>
+<span>{{ step.target }}</span>
+<span>{{ step.value or "" }}</span>
+<span>{{ step.screen }}</span>
+<span>{{ step.intent }}</span>
+<span><span class="badge {{ badge }}">{{ badge }}</span></span>
+{%- endmacro -%}
+{%- if status.runbook is none -%}
+{%- if status.state == "failed" -%}
+<div class="banner">{{ status.error }}</div>
+{%- else -%}
+<p class="state"><span class="spinner"></span> Watching the recording…</p>
+{%- endif -%}
+{%- else -%}
+{%- set runbook = status.runbook -%}
+<h2>{{ runbook.title }}</h2>
+<p class="system">{{ runbook.system }}</p>
+{%- if runbook.prerequisites %}
+<h3>Prerequisites</h3>
+<ul>
+{%- for item in runbook.prerequisites %}
+  <li>{{ item }}</li>
+{%- endfor %}
+</ul>
+{%- endif %}
+<div class="steps">
+  <div class="row head">
+    <span>#</span><span>time</span><span>action</span><span>target</span><span>value</span><span>screen</span><span>intent</span><span>check</span>
+  </div>
+{%- for step in runbook.steps %}
+{%- set record = status.record_for(step.order) %}
+{%- set badge = status.badge_for(step.order) %}
+{%- if badge == "flagged" %}
+  <details class="step">
+    <summary class="row" data-order="{{ step.order }}" data-timestamp="{{ step.timestamp_s }}">
+      {{ cells(step, badge) | indent(6) }}
+    </summary>
+    <p class="note">{{ record.check.note }}</p>
+  </details>
+{%- else %}
+  <div class="row" data-order="{{ step.order }}" data-timestamp="{{ step.timestamp_s }}"{% if badge == "error" %} title="{{ record.error }}"{% endif %}>
+    {{ cells(step, badge) | indent(4) }}
+  </div>
+{%- endif %}
+{%- endfor %}
+</div>
+{%- if runbook.pitfalls %}
+<h3>Pitfalls</h3>
+<ul>
+{%- for item in runbook.pitfalls %}
+  <li>{{ item }}</li>
+{%- endfor %}
+</ul>
+{%- endif %}
+{%- endif %}
