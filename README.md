@@ -44,8 +44,8 @@ LOGFIRE_PROJECT_URL=https://logfire-eu.pydantic.dev/<org>/<project>
 
 The Gemini key must be on a billed project or hackathon credits: the Observer's Pro model is
 not on the free tier. `LOGFIRE_TOKEN` is optional; without it nothing is sent to Logfire.
-`LOGFIRE_PROJECT_URL` is the project's page in Logfire; the footer's trace link is built from
-it and is hidden when it is unset.
+`LOGFIRE_PROJECT_URL` is the project's page in Logfire; the header's "View trace" button is
+built from it and is hidden when it is unset.
 
 Modal runs the app. Once per machine:
 
@@ -86,8 +86,9 @@ uv run modal serve src/video_to_runbook/app.py
 Open the printed `*.modal.run` URL and drop `samples/sap_b1_create_sales_order_demo.mp4` on
 the page. The player appears as soon as the upload returns and the right column says
 "Watching the recording…"; the runbook then lands whole, every step with a timestamp and a
-grey "checking" badge. Step checks, badges flipping, and the footer's trace link arrive with
-`validate_step`.
+grey "checking" badge. The header's "View trace" button is live from the first status poll,
+so the Observer can be watched in Logfire while it works; step checks and badges flipping
+arrive with `validate_step`.
 The runbook always has the same sections: title, system, Prerequisites, the step grid,
 Outcome, Pitfalls. "Export Markdown" downloads the same runbook as a numbered list of
 imperative instructions ("Type `06/30/2019` into **Delivery Date** on the Sales Order
@@ -121,8 +122,8 @@ uv run modal deploy src/video_to_runbook/app.py
 Open the page as `$URL/?tamper=7` and drop the sample. After the Observer returns, step 7's
 `target` is replaced with "the Log Out menu item" before the checks run, so the Validator
 sees frames that do not show that label and flags the step with a note naming what they
-show instead. The footer says "Demo tamper: step 7". A step number past the end of the
-runbook changes nothing, and the footer says so ("Demo tamper requested for step 20, runbook
+show instead. The header says "Demo tamper: step 7". A step number past the end of the
+runbook changes nothing, and the header says so ("Demo tamper requested for step 20, runbook
 has 16 steps"). From a shell, add `-F tamper_step=7` to the upload.
 
 Tamper runs (SC-005, each one a fresh upload, SAP unless noted; the tampered step should read `flagged`):
@@ -195,6 +196,14 @@ Automatic deletion is roadmap.
   Limoncelli's seven runbook sections the guide cites, a task recording can
   only source "Instructions for Common Tasks"; title and system stand in for the service
   overview, and the other five are documents about a service, not a task.
+- **Page styling follows the Vercel Geist reference (`DESIGN.md`).** Near-black ink on a
+  near-white canvas, hairline cards, Geist Sans for copy and Geist Mono for the section
+  eyebrows and the time and action columns, 6px square buttons because the page is an app
+  surface. The flagged badge is the one solid fill on the page: the caught step is the
+  demo's moment. Verified is green where the reference maps success to its link blue,
+  because on a projector green against red reads as pass against fail. The reference's
+  marketing pieces (hero, mesh gradient, pill buttons) were left out for the same reason:
+  this is the app, not the landing page.
 
 ## Eval scores
 
@@ -236,7 +245,7 @@ Filter the project by run:
 attributes->>'run_id' = '<run_id>'
 ```
 
-The footer's trace link opens that query. A healthy run is one `runbook` span (attributes
+The header's "View trace" button opens that query. A healthy run is one `runbook` span (attributes
 `run_id`, `video`) holding the `observer` agent run, with one model request, or two when a
 validator rejected the first output and the retry prompt shows as the second request, followed
 by one `validate_step` span per step (`run_id`, `order`) side by side, each holding a
@@ -252,7 +261,7 @@ same reason on the page. Every capped run:
 level = 'error' AND message = 'call cap reached'
 ```
 
-The footer's `calls` figure is the number of model requests the spans report, which is what
+The header's `calls` figure is the number of model requests the spans report, which is what
 the cap counts; transport retries on 429 and 5xx do not appear in it.
 
 ## Roadmap
