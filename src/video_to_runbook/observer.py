@@ -23,6 +23,12 @@ someone else repeat it. Produce a Runbook.
 - Scrolling, mis-clicks, window moves, and idle time are not steps. Collapse them into nothing.
 - When there is narration, take each step's `intent` from what the narrator says the step
   is for. Otherwise infer it from what happens next.
+- Choose `action` by what the moment is for, not by the mouse: `type` when text or a key
+  goes into a field (even if the field was clicked first); `select` when an entry is chosen
+  from a list, dropdown, or picker; `navigate` for a menu path or an address; `verify` when
+  the narrator points at something on screen without acting on it, such as a defaulted
+  value, an auto-filled tab, or a result; `click` only for a button, tab, or menu item that
+  is pressed on its own; `wait` for a pause on the system.
 - Record failed actions, such as a form the system rejects, as pitfalls.
 - Number steps from 1 in time order.
 """

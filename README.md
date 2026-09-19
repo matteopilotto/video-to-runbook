@@ -156,8 +156,23 @@ To be written as each decision lands.
 
 ## Eval scores
 
+`uv run python -m video_to_runbook.eval` scores the Observer against the ground-truth tables
+in `samples/README.md` after subtracting each clip's cut offset: step-count difference,
+share of ground-truth steps with a produced step within 3 s, share of those pairs with the
+same action, and share of produced steps the Validator verified. Last run:
+
 | case | steps | truth | Δ | ts≤3s | action | check | date |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| sap_b1_create_sales_order_demo | 16 | 14 | +2 | 0.79 | 0.73 | 0.94 | 2026-09-19 |
+| google_ai_studio_api_key_screen_only | 7 | 7 | 0 | 0.71 | 0.40 | 0.71 | 2026-09-19 |
+
+The SAP row meets the opening targets (|Δ| ≤ 4, ts≤3s ≥ 0.70, action ≥ 0.70). The first
+run scored 17 steps, 0.71, 0.50, 1.00 on SAP: the Observer called nearly every moment a
+`click`. One rule was added to its instructions, choosing the action by what the moment is
+for (`type`, `select`, `verify`) rather than by the mouse, and the table above is the re-run.
+The AI Studio clip is the untuned control; its actions are mostly `verify` in the ground
+truth, which the Observer still under-uses. A full eval run on both clips costs about $0.30
+in Gemini credits and 26 calls; `--from tests/fixtures/sap` scores the saved fixtures for free.
 
 ## Observability
 
