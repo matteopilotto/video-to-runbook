@@ -114,7 +114,7 @@ def test_score_counts_error_records_as_not_verified(sap_case: TruthCase) -> None
 
 
 def test_score_action_match_is_zero_without_pairs(sap_case: TruthCase) -> None:
-    runbook = Runbook(title="t", system="s", steps=[make_step(1, 117.0)])
+    runbook = Runbook(title="t", system="s", steps=[make_step(1, 20.0)])
 
     result = score(runbook, [], sap_case)
 

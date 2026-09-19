@@ -35,8 +35,9 @@ uv run modal serve src/video_to_runbook/app.py   # local endpoints with hot relo
 uv run modal deploy src/video_to_runbook/app.py
 ```
 
-The gate, integration, and `modal` lines run today; `.github/workflows/ci.yml` runs the
-two CI lines on every push. The eval command arrives in the commit that creates `eval.py`.
+Every line runs today; `.github/workflows/ci.yml` runs the two CI lines on every push.
+The eval command takes `--from tests/fixtures/sap` to score the saved fixtures without a
+network, and no argument to score both samples.
 `modal serve` and `modal deploy` need the Modal Secrets and the image-builder setting from the
 README's Setup section.
 
