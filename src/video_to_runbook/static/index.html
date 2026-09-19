@@ -24,18 +24,21 @@
   h2 { margin: 0 0 4px; font-size: 20px; }
   .system { margin: 0 0 12px; color: var(--grey); }
   h3 { margin: 16px 0 6px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--grey); }
-  table.steps { width: 100%; border-collapse: collapse; background: #fff; font-size: 14px; }
-  table.steps th, table.steps td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
-  table.steps th { font-weight: 600; color: var(--grey); font-size: 12px; text-transform: uppercase; }
-  table.steps tbody tr { cursor: pointer; }
-  table.steps tbody tr:hover { background: #f4f6f8; }
-  td.time { font-variant-numeric: tabular-nums; white-space: nowrap; }
-  td.action { font-family: ui-monospace, monospace; font-size: 13px; }
+  .steps { background: #fff; font-size: 14px; border-top: 1px solid var(--line); }
+  .steps .row { display: grid; grid-template-columns: 2em 4.5em 5.5em 1.4fr 1fr 1fr 1.6fr 6em; gap: 0 8px; padding: 6px 8px; border-bottom: 1px solid var(--line); align-items: start; list-style: none; }
+  .steps .row::-webkit-details-marker { display: none; }
+  .steps .row.head { font-weight: 600; color: var(--grey); font-size: 12px; text-transform: uppercase; }
+  .steps .row:not(.head) { cursor: pointer; }
+  .steps .row:not(.head):hover { background: #f4f6f8; }
+  .steps .time { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .steps .action { font-family: ui-monospace, monospace; font-size: 13px; }
+  .steps .note { margin: 0; padding: 4px 8px 10px 8px; color: var(--red); border-bottom: 1px solid var(--line); background: #fff7f7; }
   .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; }
   .badge.checking { background: var(--grey); }
   .badge.verified { background: var(--green); }
   .badge.flagged { background: var(--red); }
   .badge.error { background: var(--amber); }
+  .badge.error::before { content: "\26A0\FE0E "; }
   .banner { padding: 10px 12px; border-radius: 8px; background: #fdecec; color: var(--red); margin-bottom: 12px; }
   footer { padding: 10px 20px; border-top: 1px solid var(--line); background: #fff; color: var(--grey); font-size: 13px; display: flex; gap: 20px; min-height: 40px; }
 </style>

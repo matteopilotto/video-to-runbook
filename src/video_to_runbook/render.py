@@ -12,7 +12,7 @@ def mmss(seconds: float) -> str:
 
 _html = Environment(
     loader=PackageLoader("video_to_runbook", "templates"),
-    autoescape=select_autoescape(["html"]),
+    autoescape=select_autoescape(["html", "html.j2"]),
 )
 _html.filters["mmss"] = mmss
 

@@ -1,3 +1,13 @@
+{%- macro cells(step, badge) -%}
+<span class="order">{{ step.order }}</span>
+<span class="time">{{ step.timestamp_s | mmss }}</span>
+<span class="action">{{ step.action }}</span>
+<span>{{ step.target }}</span>
+<span>{{ step.value or "" }}</span>
+<span>{{ step.screen }}</span>
+<span>{{ step.intent }}</span>
+<span><span class="badge {{ badge }}">{{ badge }}</span></span>
+{%- endmacro -%}
 {%- if status.runbook is none -%}
 {%- if status.state == "failed" -%}
 <div class="banner">{{ status.error }}</div>
@@ -16,25 +26,27 @@
 {%- endfor %}
 </ul>
 {%- endif %}
-<table class="steps">
-  <thead>
-    <tr><th>#</th><th>time</th><th>action</th><th>target</th><th>value</th><th>screen</th><th>intent</th><th>check</th></tr>
-  </thead>
-  <tbody>
+<div class="steps">
+  <div class="row head">
+    <span>#</span><span>time</span><span>action</span><span>target</span><span>value</span><span>screen</span><span>intent</span><span>check</span>
+  </div>
 {%- for step in runbook.steps %}
-    <tr data-order="{{ step.order }}" data-timestamp="{{ step.timestamp_s }}">
-      <td>{{ step.order }}</td>
-      <td class="time">{{ step.timestamp_s | mmss }}</td>
-      <td class="action">{{ step.action }}</td>
-      <td>{{ step.target }}</td>
-      <td>{{ step.value or "" }}</td>
-      <td>{{ step.screen }}</td>
-      <td>{{ step.intent }}</td>
-      <td><span class="badge {{ status.badge_for(step.order) }}">{{ status.badge_for(step.order) }}</span></td>
-    </tr>
+{%- set record = status.record_for(step.order) %}
+{%- set badge = status.badge_for(step.order) %}
+{%- if badge == "flagged" %}
+  <details class="step">
+    <summary class="row" data-order="{{ step.order }}" data-timestamp="{{ step.timestamp_s }}">
+      {{ cells(step, badge) | indent(6) }}
+    </summary>
+    <p class="note">{{ record.check.note }}</p>
+  </details>
+{%- else %}
+  <div class="row" data-order="{{ step.order }}" data-timestamp="{{ step.timestamp_s }}"{% if badge == "error" %} title="{{ record.error }}"{% endif %}>
+    {{ cells(step, badge) | indent(4) }}
+  </div>
+{%- endif %}
 {%- endfor %}
-  </tbody>
-</table>
+</div>
 {%- if runbook.pitfalls %}
 <h3>Pitfalls</h3>
 <ul>

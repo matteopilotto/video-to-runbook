@@ -155,8 +155,12 @@ class RunStatus(BaseModel):
     runbook: Runbook | None
     checks: list[CheckRecord]
 
-    def badge_for(self, order: int) -> Badge:
+    def record_for(self, order: int) -> CheckRecord | None:
         for record in self.checks:
             if record.order == order:
-                return record.badge
-        return "checking"
+                return record
+        return None
+
+    def badge_for(self, order: int) -> Badge:
+        record = self.record_for(order)
+        return record.badge if record else "checking"
