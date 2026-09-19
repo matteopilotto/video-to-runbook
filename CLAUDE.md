@@ -8,7 +8,9 @@ scrubber (Renderer). Modal runs everything; Pydantic AI holds the schema; Logfir
 Python, managed with `uv`. Features go through spec-kit (`/speckit-*` skills in
 `.claude/skills/`), which writes `specs/<NNN>-<name>/` and branches of the same name.
 
-Status: scaffold only. No application code, tests, or CI are committed yet.
+Status: the Observer pipeline (spec 001) is built end to end: upload, Observer, parallel
+Validators, page with badges and seek, Markdown export, eval, Logfire tracing. Unit tests
+and CI run; the last eval scores are in the README.
 
 ## Where to look
 
@@ -18,7 +20,7 @@ Status: scaffold only. No application code, tests, or CI are committed yet.
 | Setup, running the demo, architecture, decisions, eval scores, roadmap | `README.md` |
 | Sample recordings, their sources, ground-truth step tables, the rejected ones | `samples/README.md` |
 | Current feature's spec, plan, and tasks | `specs/<NNN>-<name>/{spec,plan,tasks}.md` |
-| Project constitution | `.specify/memory/constitution.md` (still the unfilled template; run `/speckit-constitution` before relying on it) |
+| Project constitution | `.specify/memory/constitution.md` |
 | Spec-kit workflow (specify → clarify → plan → tasks → implement) | each skill's `SKILL.md` describes itself |
 
 ## Commands
@@ -29,15 +31,15 @@ Status: scaffold only. No application code, tests, or CI are committed yet.
 uv run ruff format .                         # fix formatting
 uv run ruff format --check . && uv run ruff check .   # CI check
 uv run pytest                                # unit tests: no network, golden fixtures only
-uv run pytest -m integration                 # hits Gemini; needs GEMINI_API_KEY, skipped otherwise
+uv run --env-file .env pytest -m integration # hits Gemini; skipped without GEMINI_API_KEY
 uv run python -m video_to_runbook.eval samples/sap_b1_create_sales_order_demo.mp4   # score Observer against ground truth
+uv run python -m video_to_runbook.eval --from tests/fixtures/sap   # same scoring on the saved fixtures, no network
 uv run modal serve src/video_to_runbook/app.py   # local endpoints with hot reload
 uv run modal deploy src/video_to_runbook/app.py
 ```
 
 Every line runs today; `.github/workflows/ci.yml` runs the two CI lines on every push.
-The eval command takes `--from tests/fixtures/sap` to score the saved fixtures without a
-network, and no argument to score both samples.
+The eval with no argument scores both samples.
 `modal serve` and `modal deploy` need the Modal Secrets and the image-builder setting from the
 README's Setup section.
 
@@ -67,8 +69,8 @@ introduces the thing it governs:
 1. **Pure core, thin glue.** `src/video_to_runbook/` holds `models.py`, `observer.py`,
    `validator.py`, `frames.py`, `render.py`, `config.py`, `tracing.py`, `runs.py`, and
    `eval.py`, each importable without Modal or a network. `app.py` is the only file that
-   imports `modal`; it wires the core into `web` (the `ingest`, `status`, `video`, and
-   `fragment` routes), `observe`, and `validate_step`.
+   imports `modal`; it wires the core into `web` (the `ingest`, `status`, `video`,
+   `fragment`, and `export` routes), `observe`, and `validate_step`.
 2. **Typed at every boundary.** Pydantic models for anything that crosses a function,
    file, or HTTP edge; `config.py` is a `pydantic-settings` class and the single source of
    model names, limits, and paths. Type hints on every signature.
@@ -131,4 +133,4 @@ Modal app layout sections of the brief. The rules below hold whatever you change
   Gemini calls and stops at a fixed limit.
 - **Sample timestamps are offset.** The ground-truth tables in `samples/README.md` use the
   original video's clock; the `_demo.mp4` cut starts 10 s later, the AI Studio cut 14.6 s
-  later. Subtract before comparing Observer output.
+  later. `eval.py` holds both offsets and subtracts them; do the same by hand.

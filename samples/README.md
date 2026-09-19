@@ -45,7 +45,7 @@ Step 10 is a natural "expected failure" the observer should capture as a pitfall
   presenter in a picture-in-picture inset. The full video is talking head before
   and after, useful as a noise-collapse test if you want it (`raw/JdKcFCLotZY.mp4`).
 
-Ground truth steps (original timestamps):
+Ground truth steps, timestamps relative to the original (subtract 14.6 s for the cut):
 
 | # | t (orig) | action | target |
 |---|---------|--------|--------|

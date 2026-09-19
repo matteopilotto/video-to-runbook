@@ -170,7 +170,7 @@ parallel validator spans; the cap trips loudly; the page links to the trace.
 **Purpose**: The README a judge can run, the demo warm-up, and doc consistency.
 
 - [X] T040 [P] Finish `README.md`: architecture diagram with the three Modal functions and the core modules, "Decisions and trade-offs" (inline video vs Files API, static vs agentic mode, Pro preview vs 2.5 Pro, budgeted cap vs shared counter, Volume commit/reload, local video copy), and "Roadmap" (executors: Playwright, n8n, computer-use; Pydantic AI Gateway; Files API for large uploads; agentic Flash Observer experiment; Observer frame tool and `Capability`; retention policy; auth and multi-user).
-- [ ] T041 [P] Consistency pass over `CLAUDE.md` and `samples/README.md`: every command in the Commands table exists and runs; the "Status: scaffold only" line is replaced with the current state; the core-module list and the Modal function names match the code; the eval offsets sentence still matches `eval.py`.
+- [X] T041 [P] Consistency pass over `CLAUDE.md` and `samples/README.md`: every command in the Commands table exists and runs; the "Status: scaffold only" line is replaced with the current state; the core-module list and the Modal function names match the code; the eval offsets sentence still matches `eval.py`.
 - [ ] T042 Deploy with `uv run modal deploy src/video_to_runbook/app.py`, then set `min_containers=1` on `observe` in `src/video_to_runbook/app.py` as a separate `chore: keep observe warm for the demo` commit about an hour before the slot, and rehearse quickstart.md §4 to §6 on `samples/google_ai_studio_api_key_screen_only.mp4`, the clip the Observer was not tuned on.
 
 ---
