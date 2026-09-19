@@ -6,16 +6,19 @@ from datetime import UTC, datetime
 from importlib.resources import files
 from pathlib import Path
 
+import logfire
 import modal
 from fastapi import FastAPI, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse
+from pydantic_ai import UsageLimitExceeded
 
-from video_to_runbook import runs
+from video_to_runbook import observer, runs
 from video_to_runbook.config import get_settings
 from video_to_runbook.frames import probe_duration
 from video_to_runbook.models import RunMeta, RunStatus
+from video_to_runbook.observer import ObserverDeps
 from video_to_runbook.render import render_fragment
-from video_to_runbook.tracing import setup_logfire
+from video_to_runbook.tracing import setup_logfire, trace_url
 
 image = (
     modal.Image.debian_slim(python_version="3.13")
@@ -43,15 +46,36 @@ if not modal.is_local():
 
 
 @app.function(timeout=900)
-def observe(run_id: str) -> None:
+async def observe(run_id: str) -> None:
     volume.reload()
     run_dir = runs.run_dir(get_settings().data_dir, run_id)
     meta = runs.read_meta(run_dir)
-    meta.state = "failed"
-    meta.error = "observe not implemented"
-    meta.finished_at = datetime.now(UTC)
+    meta.state = "watching"
     runs.write_meta(run_dir, meta)
     volume.commit()
+    with logfire.span("runbook", run_id=run_id, video=meta.filename):
+        deps = ObserverDeps(
+            run_id=run_id, video_path=run_dir / "video.mp4", duration_s=meta.duration_s
+        )
+        try:
+            result = await observer.observe(deps)
+        except UsageLimitExceeded:
+            logfire.error("call cap reached", run_id=run_id, phase="observer")
+            meta.state = "failed"
+            meta.error = "call cap reached in observer"
+        except Exception as exc:  # noqa: BLE001  the run must end failed, never stay watching
+            meta.state = "failed"
+            meta.error = f"{type(exc).__name__}: {exc}"
+        else:
+            runs.write_runbook(run_dir, result.runbook)
+            meta.observer_requests = result.requests
+            meta.observer_input_tokens = result.input_tokens
+            meta.observer_output_tokens = result.output_tokens
+            meta.trace_url = trace_url(run_id)
+            meta.state = "done"  # validation fan-out arrives with validate_step
+        meta.finished_at = datetime.now(UTC)
+        runs.write_meta(run_dir, meta)
+        volume.commit()
 
 
 @app.function()
