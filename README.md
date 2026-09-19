@@ -199,16 +199,22 @@ same action, and share of produced steps the Validator verified. Last run:
 
 | case | steps | truth | Δ | ts≤3s | action | check | date |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| sap_b1_create_sales_order_demo | 16 | 14 | +2 | 0.79 | 0.73 | 0.94 | 2026-09-19 |
+| sap_b1_create_sales_order_demo | 14 | 14 | 0 | 0.64 | 0.78 | 1.00 | 2026-09-19 |
 | google_ai_studio_api_key_screen_only | 7 | 7 | 0 | 0.71 | 0.40 | 0.71 | 2026-09-19 |
 
-The SAP row meets the opening targets (|Δ| ≤ 4, ts≤3s ≥ 0.70, action ≥ 0.70). The first
-run scored 17 steps, 0.71, 0.50, 1.00 on SAP: the Observer called nearly every moment a
-`click`. One rule was added to its instructions, choosing the action by what the moment is
-for (`type`, `select`, `verify`) rather than by the mouse, and the table above is the re-run.
-The AI Studio clip is the untuned control; its actions are mostly `verify` in the ground
-truth, which the Observer still under-uses. A full eval run on both clips costs about $0.30
-in Gemini credits and 26 calls; `--from tests/fixtures/sap` scores the saved fixtures for free.
+The opening targets are |Δ| ≤ 4, ts≤3s ≥ 0.70, action ≥ 0.70. SAP history, one run each:
+the first run scored 17 steps, 0.71, 0.50, 1.00, with nearly every moment a `click`; a rule
+choosing the action by what the moment is for (`type`, `select`, `verify`) gave 16 steps,
++2, 0.79, 0.73, 0.94; the runbook-shape rules from the PagerDuty guide (imperative title,
+prerequisites, one step per operator action with focus clicks folded into the `type` or
+`select` they precede, pitfalls named by step, an outcome) gave the row above. Step count
+now matches the ground truth and action match rose, but timestamp agreement fell below
+the target: folding a focus click into the entry that follows puts the step's timestamp at
+the typing or selecting moment, a few seconds after the click the ground truth records,
+and the previous two runs already differed by 0.08 between themselves. The AI Studio row
+predates the shape rules; its actions are mostly `verify` in the ground truth, which the
+Observer still under-uses. A full eval run on both clips costs about $0.30 in Gemini credits
+and 26 calls; `--from tests/fixtures/sap` scores the saved fixtures for free.
 
 ## Observability
 

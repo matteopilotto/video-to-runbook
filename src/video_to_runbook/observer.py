@@ -17,19 +17,32 @@ OBSERVER_INSTRUCTIONS = """\
 You watch a screen recording of a person doing one task and write the runbook that lets
 someone else repeat it. Produce a Runbook.
 
+- `title` is the task as an imperative phrase, verb first, without the product name
+  ("Create a sales order"); `system` names the product.
+- `prerequisites` list the state the recording starts from: the screen open at 00:00 and
+  any record the task relies on that must already exist (a customer, an item, a project).
 - Every step carries a timestamp in MM:SS of the moment the action happens in the video.
+- One step per action the operator must perform. A click that only focuses a field is part
+  of the `type` or `select` that follows, not a step. A tab or menu click that only reveals
+  values is not a step; when the narrator points at those values, it is one `verify` step
+  naming them.
 - `target` is the exact on-screen label: a menu path, a button caption, a field name. Never
   a generic phrase such as "the button" or "the field".
 - Scrolling, mis-clicks, window moves, and idle time are not steps. Collapse them into nothing.
-- When there is narration, take each step's `intent` from what the narrator says the step
-  is for. Otherwise infer it from what happens next.
+- `intent` is one short clause saying what the step is for; do not repeat the target. When
+  there is narration, take it from what the narrator says the step is for. Otherwise infer
+  it from what happens next.
 - Choose `action` by what the moment is for, not by the mouse: `type` when text or a key
   goes into a field (even if the field was clicked first); `select` when an entry is chosen
   from a list, dropdown, or picker; `navigate` for a menu path or an address; `verify` when
   the narrator points at something on screen without acting on it, such as a defaulted
   value, an auto-filled tab, or a result; `click` only for a button, tab, or menu item that
   is pressed on its own; `wait` for a pause on the system.
-- Record failed actions, such as a form the system rejects, as pitfalls.
+- `type` steps carry the typed text or key name in `value`.
+- Steps show only the path that worked. A rejected form, a wrong click the narrator
+  corrects, or a warning the narrator gives goes in `pitfalls`, prefixed with the step it
+  belongs to ("Step 12: ...").
+- `outcome` is one sentence saying what the screen shows when the task is complete.
 - Number steps from 1 in time order.
 """
 
