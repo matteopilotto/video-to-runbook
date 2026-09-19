@@ -133,7 +133,7 @@ second of the step's timestamp (SC-006).
 
 ### Implementation for User Story 4
 
-- [ ] T033 [US4] Add `src/video_to_runbook/templates/runbook.md.j2` and `render_markdown(status: RunStatus) -> str` in `src/video_to_runbook/render.py` (no autoescape for the Markdown environment; raise `ValueError("no runbook yet")` when `runbook is None`).
+- [X] T033 [US4] Add `src/video_to_runbook/templates/runbook.md.j2` and `render_markdown(status: RunStatus) -> str` in `src/video_to_runbook/render.py` (no autoescape for the Markdown environment; raise `ValueError("no runbook yet")` when `runbook is None`).
 - [ ] T034 [US4] Add `GET /runs/{run_id}/runbook.md` to `src/video_to_runbook/app.py` returning `text/markdown` with `Content-Disposition: attachment; filename="<slugified title>.md"` (`409 {"detail": "no runbook yet"}` before the runbook exists), and an "Export Markdown" `<a download>` in `src/video_to_runbook/static/index.html` enabled once `status.runbook` is present.
 
 ---
