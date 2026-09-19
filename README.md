@@ -200,7 +200,31 @@ in Gemini credits and 26 calls; `--from tests/fixtures/sap` scores the saved fix
 
 ## Observability
 
-To be written with the trace propagation.
+Every Modal container configures Logfire at start and instruments Pydantic AI, so each model
+request is a span carrying its token counts and message exchange (video and frames excluded).
+Filter the project by run:
+
+```
+attributes->>'run_id' = '<run_id>'
+```
+
+The footer's trace link opens that query. A healthy run is one `runbook` span (attributes
+`run_id`, `video`) holding the `observer` agent run, with one model request, or two when a
+validator rejected the first output and the retry prompt shows as the second request, followed
+by one `validate_step` span per step (`run_id`, `order`) side by side, each holding a
+`validator` agent run of about 3.5k input tokens. The validators run in other containers;
+their spans join the tree because `observe` passes the Logfire propagation context into the map.
+
+A tripped cap is an error-level `call cap reached` event with `run_id` and either
+`capped=<n>` (steps that got no call) or `phase=observer`, and the run ends `failed` with the
+same reason on the page. Every capped run:
+
+```
+level = 'error' AND message = 'call cap reached'
+```
+
+The footer's `calls` figure is the number of model requests the spans report, which is what
+the cap counts; transport retries on 429 and 5xx do not appear in it.
 
 ## Roadmap
 
