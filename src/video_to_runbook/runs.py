@@ -26,6 +26,10 @@ def write_runbook(run_dir: Path, runbook: Runbook) -> None:
     (run_dir / "runbook.json").write_text(runbook.model_dump_json(indent=2))
 
 
+def read_runbook(run_dir: Path) -> Runbook:
+    return Runbook.model_validate_json((run_dir / "runbook.json").read_text())
+
+
 def write_check(run_dir: Path, record: CheckRecord) -> None:
     checks = run_dir / "checks"
     checks.mkdir(exist_ok=True)
@@ -35,10 +39,7 @@ def write_check(run_dir: Path, record: CheckRecord) -> None:
 def read_status(run_dir: Path) -> RunStatus:
     """Assemble the status payload from whatever files the run has so far."""
     meta = read_meta(run_dir)
-    runbook_file = run_dir / "runbook.json"
-    runbook = (
-        Runbook.model_validate_json(runbook_file.read_text()) if runbook_file.exists() else None
-    )
+    runbook = read_runbook(run_dir) if (run_dir / "runbook.json").exists() else None
     checks = sorted(
         (CheckRecord.model_validate_json(f.read_text()) for f in run_dir.glob("checks/*.json")),
         key=lambda record: record.order,

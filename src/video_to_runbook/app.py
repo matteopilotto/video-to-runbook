@@ -14,11 +14,12 @@ from pydantic_ai import UsageLimitExceeded
 
 from video_to_runbook import observer, runs
 from video_to_runbook.config import get_settings
-from video_to_runbook.frames import probe_duration
-from video_to_runbook.models import RunMeta, RunStatus
+from video_to_runbook.frames import extract_frames, probe_duration
+from video_to_runbook.models import CheckRecord, RunMeta, RunStatus
 from video_to_runbook.observer import ObserverDeps
 from video_to_runbook.render import render_fragment
 from video_to_runbook.tracing import setup_logfire, trace_url
+from video_to_runbook.validator import check_step
 
 image = (
     modal.Image.debian_slim(python_version="3.13")
@@ -52,8 +53,9 @@ GEMINI_REGION = "us"
 
 @app.function(timeout=900, region=GEMINI_REGION)
 async def observe(run_id: str) -> None:
+    settings = get_settings()
     await volume.reload.aio()
-    run_dir = runs.run_dir(get_settings().data_dir, run_id)
+    run_dir = runs.run_dir(settings.data_dir, run_id)
     meta = runs.read_meta(run_dir)
     meta.state = "watching"
     meta.trace_url = trace_url(run_id)
@@ -65,6 +67,41 @@ async def observe(run_id: str) -> None:
         )
         try:
             result = await observer.observe(deps)
+            runbook, meta.tamper_applied = runs.apply_tamper(result.runbook, meta.tamper_step)
+            runs.write_runbook(run_dir, runbook)
+            meta.observer_requests = result.requests
+            meta.observer_input_tokens = result.input_tokens
+            meta.observer_output_tokens = result.output_tokens
+            meta.state = "checking"
+            steps = runbook.steps
+            slots = runs.budget_slots(
+                settings.call_cap, result.requests, settings.check_request_limit
+            )
+            capped = runs.capped_records(steps, slots)
+            for record in capped:
+                runs.write_check(run_dir, record)
+            if capped:
+                logfire.error("call cap reached", run_id=run_id, capped=len(capped))
+            runs.write_meta(run_dir, meta)
+            await volume.commit.aio()
+            orders = [step.order for step in steps[: len(steps) - len(capped)]]
+            outcomes = [
+                outcome
+                async for outcome in validate_step.map.aio(
+                    [run_id] * len(orders), orders, return_exceptions=True
+                )
+            ]
+            for order, outcome in zip(orders, outcomes, strict=True):
+                if isinstance(outcome, Exception):
+                    runs.write_check(
+                        run_dir,
+                        CheckRecord(order=order, error=f"{type(outcome).__name__}: {outcome}"),
+                    )
+            if capped:
+                meta.state = "failed"
+                meta.error = f"call cap reached: {len(capped)} of {len(steps)} steps not checked"
+            else:
+                meta.state = "done"
         except UsageLimitExceeded:
             logfire.error("call cap reached", run_id=run_id, phase="observer")
             meta.state = "failed"
@@ -72,15 +109,23 @@ async def observe(run_id: str) -> None:
         except Exception as exc:  # noqa: BLE001  the run must end failed, never stay watching
             meta.state = "failed"
             meta.error = f"{type(exc).__name__}: {exc}"
-        else:
-            runs.write_runbook(run_dir, result.runbook)
-            meta.observer_requests = result.requests
-            meta.observer_input_tokens = result.input_tokens
-            meta.observer_output_tokens = result.output_tokens
-            meta.state = "done"  # validation fan-out arrives with validate_step
         meta.finished_at = datetime.now(UTC)
         runs.write_meta(run_dir, meta)
         await volume.commit.aio()
+
+
+@app.function(timeout=180, region=GEMINI_REGION)
+async def validate_step(run_id: str, order: int) -> None:
+    settings = get_settings()
+    await volume.reload.aio()
+    run_dir = runs.run_dir(settings.data_dir, run_id)
+    meta = runs.read_meta(run_dir)
+    step = next(s for s in runs.read_runbook(run_dir).steps if s.order == order)
+    frames = extract_frames(
+        run_dir / "video.mp4", step.timestamp_s, meta.duration_s, settings.frame_offsets_s
+    )
+    runs.write_check(run_dir, await check_step(step, frames))
+    await volume.commit.aio()
 
 
 @app.function()

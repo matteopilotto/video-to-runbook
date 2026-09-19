@@ -11,8 +11,10 @@ from video_to_runbook.runs import (
     budget_slots,
     capped_records,
     read_meta,
+    read_runbook,
     read_status,
     write_meta,
+    write_runbook,
 )
 
 
@@ -87,6 +89,12 @@ def test_meta_round_trip(tmp_path: Path) -> None:
     meta = make_meta("abc123abc123")
     write_meta(tmp_path, meta)
     assert read_meta(tmp_path) == meta
+
+
+def test_runbook_round_trip(tmp_path: Path) -> None:
+    runbook = make_runbook(3)
+    write_runbook(tmp_path, runbook)
+    assert read_runbook(tmp_path) == runbook
 
 
 def test_read_status_assembles_the_payload(tmp_path: Path) -> None:
