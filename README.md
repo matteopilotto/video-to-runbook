@@ -125,6 +125,12 @@ Tamper runs (SC-005, each one a fresh SAP upload; the tampered step should read 
 | 2026-09-19 | step 20 | not applied, footer "runbook has 14 steps"; 15 calls, 148 s |
 | 2026-09-19 | none | 20-step runbook, step 20 capped under the 60-call budget ("call cap reached: 1 of 20 steps not checked"); cap raised to 100 |
 | 2026-09-19 | step 20 | not applied, footer "runbook has 12 steps"; all 12 verified, 14 calls, 120k tokens, 76 s; browser run, row click seeks the player |
+| 2026-09-19 | step 7 | flagged with a note, footer "Demo tamper: step 7"; browser run, flagged row expands to the note on click |
+
+The cap path was seen on the page when a 20-step runbook tripped the old 60-call budget
+(red banner, amber error badges, state `failed`). The forced-cap rehearsal with `CALL_CAP=2`
+and its Logfire error event were skipped: the cap stays at 100 for the demo, where a healthy
+run never reaches it.
 
 ### Retention
 
