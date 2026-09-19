@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     logfire_project_url: str | None = None
     observer_model: str = "gemini-3.1-pro-preview"
     validator_model: str = "gemini-3.8-flash"
-    call_cap: int = 60
+    call_cap: int = 100
     observer_request_limit: int = 4
     check_request_limit: int = 3
     observer_timeout_s: int = 180

@@ -96,7 +96,7 @@ second model request, which satisfies "the retry is visible in Logfire".
 **Alternatives considered**: `pydantic_ai.retries` tenacity transports (need `tenacity`,
 more surface); hand-rolled retry loop (a regression per Constitution II).
 
-## R5. The 60-call cap without shared state
+## R5. The call cap without shared state
 
 **Decision**: Budget by construction, per run:
 
@@ -109,9 +109,10 @@ only calls them.
 
 **Rationale**: Validators run in separate containers, so a live shared counter would need a
 `modal.Dict` and would couple checks (the constitution forbids shared mutable state between
-them). Fixed per-phase limits make the total provably ≤ 60 with zero coordination, and every
-trip is loud. With 4 + 3 × 18 = 58, an 18-step runbook fits; step 19 onward is reported as
-capped rather than silently dropped.
+them). Fixed per-phase limits make the total provably ≤ the cap with zero coordination, and every
+trip is loud. The cap started at 60 (4 + 3 × 18 = 58, an 18-step runbook fits) and moved to
+100 (32 steps) after a 20-step runbook was capped in rehearsal; steps beyond the budget are
+reported as capped rather than silently dropped.
 
 **Alternatives considered**: `modal.Dict` counter (shared state, extra primitive);
 `RunUsage` shared object (in-process only).

@@ -123,6 +123,7 @@ Tamper runs (SC-005, each one a fresh SAP upload; the tampered step should read 
 | --- | --- | --- |
 | 2026-09-19 | step 7 | flagged, note "clicking the Sales Employee dropdown arrow, not the Log Out menu item"; 17 steps, 18 calls, 165 s, run concurrently with the next row |
 | 2026-09-19 | step 20 | not applied, footer "runbook has 14 steps"; 15 calls, 148 s |
+| 2026-09-19 | none | 20-step runbook, step 20 capped under the 60-call budget ("call cap reached: 1 of 20 steps not checked"); cap raised to 100 |
 
 ### Retention
 
@@ -138,6 +139,13 @@ Automatic deletion is roadmap.
 ## Decisions and trade-offs
 
 To be written as each decision lands.
+
+- **Budgeted call cap, not a shared counter.** Each run may make at most 100 model calls
+  (`CALL_CAP`). The Observer gets 4 requests; after it returns, the remaining budget is
+  divided by 3 (the per-check request limit) into check slots, and steps beyond the slots
+  are recorded as errors without a call. The budget assumes every check retries twice, so
+  it is conservative: in practice checks use one request each. The cap started at 60 and
+  moved to 100 after a 20-step runbook tripped it in rehearsal.
 
 ## Eval scores
 

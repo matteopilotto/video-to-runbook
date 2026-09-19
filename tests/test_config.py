@@ -16,7 +16,7 @@ def test_defaults_load_without_environment() -> None:
     s = Settings()
     assert s.observer_model == "gemini-3.1-pro-preview"
     assert s.validator_model == "gemini-3.8-flash"
-    assert s.call_cap == 60
+    assert s.call_cap == 100
     assert s.observer_request_limit == 4
     assert s.check_request_limit == 3
     assert s.max_upload_mb == 100

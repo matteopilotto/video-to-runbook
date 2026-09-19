@@ -41,7 +41,7 @@ eval.
 (SC-002); video visible and "watching" within 5 s (SC-003); default test suite under 5 s
 (SC-008).
 
-**Constraints**: Uploads ≤ 100 MB and `video/*` only; 60 model calls per run, budgeted by
+**Constraints**: Uploads ≤ 100 MB and `video/*` only; 100 model calls per run, budgeted by
 construction (R5); every model call has a timeout and a bounded retry; Observer on
 `gemini-3.1-pro-preview`, Validator on `gemini-3.8-flash`; Pro is paid-only, so the stage key
 must be billed or on credits; core modules import without Modal or network.

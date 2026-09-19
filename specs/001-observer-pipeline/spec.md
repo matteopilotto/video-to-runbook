@@ -16,7 +16,7 @@
 - Q: What should the eval's "check agreement rate" measure? → A: The share of steps in an untampered run whose check verdict is "verified", read from the run's existing check results; the eval adds no model calls beyond the run itself.
 - Q: How should the demo tamper choose which step to alter? → A: The hidden page parameter carries the step number to tamper. If the runbook has fewer steps than that number, nothing is tampered and the footer says so.
 - Q: How long should uploaded recordings and their results be kept on the server after a run finishes? → A: Kept until cleared by hand. No automatic deletion in this feature; the README states this and lists deletion as roadmap.
-- Q: How many model calls should a single run be allowed before the cap trips and the run fails? → A: A fixed cap of 60 calls per run, counted across the watching call, its retries, and every check and check retry.
+- Q: How many model calls should a single run be allowed before the cap trips and the run fails? → A: A fixed cap of 60 calls per run, counted across the watching call, its retries, and every check and check retry. Raised to 100 on 2026-09-19 after a 20-step runbook tripped 60 in rehearsal.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -174,7 +174,7 @@ A maintainer or judge filters the trace viewer by a run reference and sees the w
 #### Reliability and observability
 
 - **FR-023**: Every call to the watching or checking model MUST have a timeout and a bounded number of retries.
-- **FR-024**: Every run MUST count its model calls, across the watching call, its retries, and every check and check retry, and stop at a fixed cap of 60 calls; reaching the cap MUST mark the run as failed on the page and record an error-level event in the trace.
+- **FR-024**: Every run MUST count its model calls, across the watching call, its retries, and every check and check retry, and stop at a fixed cap of 100 calls; reaching the cap MUST mark the run as failed on the page and record an error-level event in the trace.
 - **FR-025**: Every run MUST be traceable as one tree by run reference and video name, showing the watching call, each rejected output and retry, one span per step check, and token usage.
 - **FR-026**: Model and trace credentials MUST be read from the environment and never stored in the repository.
 - **FR-026a**: Uploaded recordings, runbooks, and check results MUST be kept on the server until cleared by hand. This feature performs no automatic deletion; the README MUST state this and list a retention policy as roadmap.
@@ -215,7 +215,7 @@ A maintainer or judge filters the trace viewer by a run reference and sees the w
 - Recordings are screen captures of roughly 720p, between 30 seconds and 3 minutes long, under 100 MB, in a common video container, with or without narration. The two sample clips are 118 s and 51 s at 5 to 7 MB.
 - Ground-truth moments in `samples/README.md` are on the original video's clock; the SAP demo clip starts 10 s later and the AI Studio clip 14.6 s later, and the eval subtracts these offsets.
 - The eval thresholds in SC-001 are opening targets chosen so a regression is visible, not a promise of accuracy; they can be tightened once the first scores are recorded.
-- The per-run model-call cap of 60 (FR-024) covers a 20-step runbook with three watching attempts and every check retried twice, so a healthy run never trips it, while a runaway loop is stopped after a few dozen cheap calls.
+- The per-run model-call cap of 100 (FR-024) covers a 32-step runbook with four watching attempts and every check retried twice (4 + 3 × 32), so a healthy run never trips it, while a runaway loop is stopped after about a hundred cheap calls. The original 60 covered 18 steps at that worst case and tripped on a 20-step runbook in rehearsal.
 - A single operator uses the page at a time on stage; two simultaneous runs must not interfere, but there is no user identity and no run history on the page. Files stay on the server until cleared by hand (FR-026a); the only recordings expected during the build are the two public sample clips.
 - Reloading the page abandons the view of the current run; resuming a run from its reference is not required.
 - The demo tamper is a documented demonstration aid, disclosed plainly if asked, not a hidden behaviour of normal runs.
