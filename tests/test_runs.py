@@ -33,6 +33,7 @@ def make_runbook(n: int) -> Runbook:
             )
             for i in range(1, n + 1)
         ],
+        outcome="The new sales order is displayed with its document number",
     )
 
 

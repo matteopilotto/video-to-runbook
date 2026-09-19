@@ -25,6 +25,7 @@ def runbook(*steps: dict[str, Any]) -> dict[str, Any]:
         "system": "SAP Business One",
         "prerequisites": [],
         "steps": list(steps),
+        "outcome": "The new sales order is displayed with its document number",
         "pitfalls": [],
     }
 
@@ -144,3 +145,14 @@ def test_type_step_needs_a_value() -> None:
 def test_type_step_with_a_key_name_is_accepted() -> None:
     rb = Runbook(**runbook(step(1), step(2, action="type", target="Customer", value="Tab")))
     assert rb.steps[1].value == "Tab"
+
+
+@pytest.mark.parametrize("outcome", [None, "  "])
+def test_runbook_needs_an_outcome(outcome: str | None) -> None:
+    data = runbook(step(1))
+    if outcome is None:
+        del data["outcome"]
+    else:
+        data["outcome"] = outcome
+    with pytest.raises(ValidationError, match="outcome"):
+        Runbook(**data)

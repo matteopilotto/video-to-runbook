@@ -58,6 +58,7 @@ class Runbook(BaseModel):
     system: NonEmpty
     prerequisites: list[str] = []
     steps: list[Step] = Field(min_length=1)
+    outcome: NonEmpty
     pitfalls: list[str] = []
 
     @model_validator(mode="after")

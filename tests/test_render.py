@@ -167,3 +167,13 @@ def test_every_runbook_has_the_same_sections_in_order(sap_runbook: Runbook) -> N
     assert html.count("None recorded.") == 1
     assert md.index("## Prerequisites") < md.index("## Steps") < md.index("## Pitfalls")
     assert md.count("None recorded.") == 1
+
+
+def test_outcome_section_sits_between_steps_and_pitfalls(sap_runbook: Runbook) -> None:
+    html = render_fragment(status_for(sap_runbook))
+    md = render_markdown(status_for(sap_runbook))
+
+    assert html.index("Prerequisites") < html.index("Outcome") < html.index("Pitfalls")
+    assert sap_runbook.outcome in html
+    assert md.index("## Steps") < md.index("## Outcome") < md.index("## Pitfalls")
+    assert f"## Outcome\n\n{sap_runbook.outcome}\n" in md

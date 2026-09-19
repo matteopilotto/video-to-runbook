@@ -102,7 +102,10 @@ def test_score_on_the_fixtures(fixtures_dir: Path, sap_case: TruthCase) -> None:
 
 def test_score_counts_error_records_as_not_verified(sap_case: TruthCase) -> None:
     runbook = Runbook(
-        title="t", system="s", steps=[make_step(1, 1.0), make_step(2, 6.0), make_step(3, 8.0)]
+        title="t",
+        system="s",
+        outcome="o",
+        steps=[make_step(1, 1.0), make_step(2, 6.0), make_step(3, 8.0)],
     )
     checks = [
         CheckRecord(order=1, check={"order": 1, "matches": True, "confidence": 1.0}),
@@ -114,7 +117,7 @@ def test_score_counts_error_records_as_not_verified(sap_case: TruthCase) -> None
 
 
 def test_score_action_match_is_zero_without_pairs(sap_case: TruthCase) -> None:
-    runbook = Runbook(title="t", system="s", steps=[make_step(1, 20.0)])
+    runbook = Runbook(title="t", system="s", outcome="o", steps=[make_step(1, 20.0)])
 
     result = score(runbook, [], sap_case)
 

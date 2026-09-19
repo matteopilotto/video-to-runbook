@@ -183,8 +183,10 @@ Automatic deletion is roadmap.
 - **Runbook shape follows the PagerDuty runbook guide.** Its writing rules (clear and simple,
   easy to follow, specific to the process, consistent structure and headers, field-tested)
   are the reason for the fixed section order in every rendering: title, system,
-  Prerequisites, Steps, Pitfalls, with an empty section shown as "None recorded." rather
-  than dropped. Of Limoncelli's seven runbook sections the guide cites, a task recording can
+  Prerequisites, Steps, Outcome, Pitfalls, with an empty list shown as "None recorded."
+  rather than dropped. Outcome is one required sentence saying what the screen shows when
+  the task is done, the recipe's finished dish, so a reader knows when to stop. Of
+  Limoncelli's seven runbook sections the guide cites, a task recording can
   only source "Instructions for Common Tasks"; title and system stand in for the service
   overview, and the other five are documents about a service, not a task.
 

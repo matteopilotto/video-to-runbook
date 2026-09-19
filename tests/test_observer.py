@@ -31,6 +31,7 @@ def runbook(*steps: dict[str, Any]) -> dict[str, Any]:
         "system": "SAP Business One",
         "prerequisites": [],
         "steps": list(steps),
+        "outcome": "The new sales order is displayed with its document number",
         "pitfalls": [],
     }
 

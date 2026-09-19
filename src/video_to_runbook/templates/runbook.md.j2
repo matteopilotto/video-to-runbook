@@ -18,6 +18,10 @@ None recorded.
 {{ step.order }}. **{{ step.timestamp_s | mmss }}** {{ step | instruction | oneline }}, to {{ step.intent | oneline }}. `{{ status.badge_for(step.order) }}`{% if note %}: {{ note | oneline }}{% endif %}
 {%- endfor %}
 
+## Outcome
+
+{{ runbook.outcome }}
+
 ## Pitfalls
 {% if runbook.pitfalls %}
 {%- for item in runbook.pitfalls %}

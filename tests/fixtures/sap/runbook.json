@@ -148,6 +148,7 @@
       "intent": "go back to our previous destination"
     }
   ],
+  "outcome": "The sales order is saved and the form shows the new order.",
   "pitfalls": [
     "Failing to enter a Delivery Date before clicking \"Add\" will cause the system to reject the form. You must enter the date and try saving again."
   ]
