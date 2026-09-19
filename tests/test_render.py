@@ -177,14 +177,14 @@ def test_markdown_export_needs_a_runbook() -> None:
 
 
 def test_every_runbook_has_the_same_sections_in_order(sap_runbook: Runbook) -> None:
-    assert sap_runbook.prerequisites == [] and sap_runbook.pitfalls
-    html = render_fragment(status_for(sap_runbook))
-    md = render_markdown(status_for(sap_runbook))
+    bare = sap_runbook.model_copy(update={"prerequisites": [], "pitfalls": []})
+    html = render_fragment(status_for(bare))
+    md = render_markdown(status_for(bare))
 
     assert html.index("Prerequisites") < html.index("Pitfalls")
-    assert html.count("None recorded.") == 1
+    assert html.count("None recorded.") == 2
     assert md.index("## Prerequisites") < md.index("## Steps") < md.index("## Pitfalls")
-    assert md.count("None recorded.") == 1
+    assert md.count("None recorded.") == 2
 
 
 def test_outcome_section_sits_between_steps_and_pitfalls(sap_runbook: Runbook) -> None:
