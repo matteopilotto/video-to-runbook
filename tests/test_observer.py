@@ -79,7 +79,7 @@ def test_timestamp_beyond_duration_is_retried(tmp_path: Path) -> None:
     result = agent.run_sync("watch", deps=deps_for(tmp_path))
 
     assert result.output.model_dump() == VALID_DUMP
-    assert result.usage().requests == 2
+    assert result.usage.requests == 2
     prompts = retry_prompts(requests[1])
     assert len(prompts) == 1
     assert "step 2 timestamp 999.0 s is beyond the video duration 118.0 s" in prompts[0]
@@ -92,7 +92,7 @@ def test_schema_violation_is_retried(tmp_path: Path) -> None:
     result = agent.run_sync("watch", deps=deps_for(tmp_path))
 
     assert result.output.model_dump() == VALID_DUMP
-    assert result.usage().requests == 2
+    assert result.usage.requests == 2
     assert "step 2" in retry_prompts(requests[1])[0]
 
 
