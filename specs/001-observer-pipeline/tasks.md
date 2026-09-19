@@ -94,7 +94,7 @@ one flagged row; the 60-call cap is budgeted and loud.
 
 ### Tests for User Story 2
 
-- [ ] T023 [P] [US2] Write `tests/test_validator.py` with `FunctionModel`: (a) the fake returns `StepCheck(matches=False, note=None)` first, then `matches=False, note="frame shows the Logistics tab"`; assert the result's `check.note` is set and `requests == 2`; (b) the request carries three `BinaryContent` image parts; (c) a fake that raises a timeout-like exception yields `error` set, `check is None`, and `requests` counted; (d) `UsageLimitExceeded` from a `request_limit=1` fake with a retry yields `error` containing "call cap".
+- [X] T023 [P] [US2] Write `tests/test_validator.py` with `FunctionModel`: (a) the fake returns `StepCheck(matches=False, note=None)` first, then `matches=False, note="frame shows the Logistics tab"`; assert the result's `check.note` is set and `requests == 2`; (b) the request carries three `BinaryContent` image parts; (c) a fake that raises a timeout-like exception yields `error` set, `check is None`, and `requests` counted; (d) `UsageLimitExceeded` from a `request_limit=1` fake with a retry yields `error` containing "call cap".
 - [ ] T024 [P] [US2] Extend `tests/test_render.py`: with `checks` from `tests/fixtures/sap/checks.json` plus one hand-made `CheckRecord(error="timed out")`, the fragment shows `.badge.verified`, `.badge.flagged` inside a `<details>` whose body contains the note, and `.badge.error` whose text is "error" (not "flagged"); steps without a record stay `.badge.checking`.
 
 ### Implementation for User Story 2
