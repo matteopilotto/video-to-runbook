@@ -124,6 +124,7 @@ Tamper runs (SC-005, each one a fresh SAP upload; the tampered step should read 
 | 2026-09-19 | step 7 | flagged, note "clicking the Sales Employee dropdown arrow, not the Log Out menu item"; 17 steps, 18 calls, 165 s, run concurrently with the next row |
 | 2026-09-19 | step 20 | not applied, footer "runbook has 14 steps"; 15 calls, 148 s |
 | 2026-09-19 | none | 20-step runbook, step 20 capped under the 60-call budget ("call cap reached: 1 of 20 steps not checked"); cap raised to 100 |
+| 2026-09-19 | step 20 | not applied, footer "runbook has 12 steps"; all 12 verified, 14 calls, 120k tokens, 76 s; browser run, row click seeks the player |
 
 ### Retention
 
