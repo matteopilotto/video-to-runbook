@@ -117,7 +117,7 @@ one flagged row; the 60-call cap is budgeted and loud.
 **Independent Test**: quickstart.md §4: click a row, the player sits paused within half a
 second of the step's timestamp (SC-006).
 
-- [ ] T031 [US3] In `src/video_to_runbook/static/index.html` add one delegated `click` listener on the right column: find the closest `[data-timestamp]`, set `video.currentTime = Number(dataset.timestamp)` and `video.pause()`; a click on a `<details>` summary both seeks and toggles the note (do not `preventDefault`). The row attributes are already asserted in `tests/test_render.py` (T015); confirm by hand in `uv run modal serve`.
+- [X] T031 [US3] In `src/video_to_runbook/static/index.html` add one delegated `click` listener on the right column: find the closest `[data-timestamp]`, set `video.currentTime = Number(dataset.timestamp)` and `video.pause()`; a click on a `<details>` summary both seeks and toggles the note (do not `preventDefault`). The row attributes are already asserted in `tests/test_render.py` (T015); confirm by hand in `uv run modal serve`.
 
 ---
 

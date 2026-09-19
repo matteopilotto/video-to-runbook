@@ -170,6 +170,13 @@
     return node.innerHTML;
   }
 
+  right.addEventListener("click", (event) => {
+    const row = event.target.closest("[data-timestamp]");
+    if (!row) return;
+    video.currentTime = Number(row.dataset.timestamp);
+    video.pause();
+  });
+
   fileInput.addEventListener("change", () => { if (fileInput.files[0]) upload(fileInput.files[0]); });
   dropzone.addEventListener("dragover", (event) => { event.preventDefault(); dropzone.classList.add("over"); });
   dropzone.addEventListener("dragleave", () => dropzone.classList.remove("over"));
